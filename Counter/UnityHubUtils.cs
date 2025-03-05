@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics;
 using MsBox.Avalonia;
 
 namespace Counter;
@@ -9,7 +10,7 @@ static class UnityHubUtils
     public static List<UnityProject> UnityProjects = [];
     public static List<string> UnityInstallationSearchPaths = [];
 
-    static readonly string s_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UnityHubNative");
+    static readonly string s_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UnityHubNative");
     static readonly string s_searchPathsPath = Path.Combine(s_dir, "editorPaths.txt");
     static readonly string s_projectPathsPath = Path.Combine(s_dir, "projects.txt");
 
@@ -34,7 +35,7 @@ static class UnityHubUtils
 #endif
     ;
 
-    static readonly string[] s_projectVersionPath = ["ProjectSettings", "ProjectVersion.txt"];
+    static readonly string s_projectVersionPath = Path.Combine("ProjectSettings", "ProjectVersion.txt");
 
     /// <summary>
     /// Calls all the load methods in order. 
@@ -61,18 +62,18 @@ static class UnityHubUtils
         bool exists = File.Exists(s_searchPathsPath);
         if (exists)
         {
-            Console.WriteLine("found Unity installation search paths data at \"{0}\"", s_searchPathsPath);
+            Debug.WriteLine("found Unity installation search paths data at \"{0}\"", s_searchPathsPath);
             UnityInstallationSearchPaths.AddRange(File.ReadAllLines(s_searchPathsPath));
         }
         else
         {
-            Console.WriteLine("did not find Unity installation search paths data. using defaults");
+            Debug.WriteLine("did not find Unity installation search paths data. using defaults");
             UnityInstallationSearchPaths.AddRange(s_unityInstallationSearchPathsDefault);
             SaveUnityInstallationSearchPaths();
         }
-        Console.WriteLine("found Unity installation search paths:");
+        Debug.WriteLine("found Unity installation search paths:");
         for (int i = 0; i < UnityInstallationSearchPaths.Count; i++)
-            Console.WriteLine("-> {0}", UnityInstallationSearchPaths[i]);
+            Debug.WriteLine("-> {0}", UnityInstallationSearchPaths[i]);
     }
 
     /// <summary>
@@ -84,7 +85,7 @@ static class UnityHubUtils
         try
         {
             File.WriteAllLines(s_searchPathsPath, UnityInstallationSearchPaths);
-            Console.WriteLine("saved Unity installation paths to \"{0}\"", s_searchPathsPath);
+            Debug.WriteLine("saved Unity installation paths to \"{0}\"", s_searchPathsPath);
         }
         catch (Exception ex)
         {
@@ -116,9 +117,9 @@ static class UnityHubUtils
                 }
             }
         }
-        Console.WriteLine("found Unity installations:");
+        Debug.WriteLine("found Unity installations:");
         for (int i = 0; i < UnityInstallations.Count; i++)
-            Console.WriteLine("-> {0}", UnityInstallations[i]);
+            Debug.WriteLine("-> {0}", UnityInstallations[i]);
     }
 
     /// <summary>
@@ -134,17 +135,12 @@ static class UnityHubUtils
         {
             var lines = File.ReadAllLines(s_projectPathsPath);
             for (int i = 0; i < lines.Length; i++)
-            {
-                if (File.Exists(lines[i]))
-                {
-                    var ind = FindUnityVersionIndex(lines[i]);
-                    UnityProjects.Add(new(lines[i], ind == -1 ? null : UnityInstallations[i]));
-                }
-            }
+                if (UnityProject.TryLoadUnityProject(lines[i], out var result))
+                    UnityProjects.Add(result);
         }
-        Console.WriteLine("found Unity projects:");
+        Debug.WriteLine("found Unity projects:");
         for (int i = 0; i < UnityProjects.Count; i++)
-            Console.WriteLine("-> {0}", UnityProjects[i]);
+            Debug.WriteLine("-> {0}", UnityProjects[i]);
     }
 
     /// <summary>
@@ -168,19 +164,32 @@ static class UnityHubUtils
 
     /// <summary>
     /// Finds the index from <see cref="UnityInstallations"/> which is the unity installation 
-    /// version for the unity project at <paramref name="path"/>. Returns -1 if not found.
+    /// versionString for the unity project at <paramref name="path"/>. Returns -1 if not found.
     /// </summary>
-    public static int FindUnityVersionIndex(string path)
+    public static int FindUnityVersionIndex(string path, out string versionString)
     {
         EnsureSaveDirectoryExists();
-        var projectVersionFile = Path.Combine([path, .. s_projectVersionPath]);
+        var projectVersionFile = Path.Combine(path, s_projectVersionPath);
         if (File.Exists(projectVersionFile))
         {
-            var version = File.ReadAllText(projectVersionFile)[..17];
+            var lines = File.ReadAllLines(projectVersionFile);
+            versionString = string.Empty;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                versionString = ExtractVersionFromDirName(lines[i]);
+                if (!string.IsNullOrEmpty(versionString))
+                    break;
+            }
+            if (string.IsNullOrEmpty(versionString))
+            {
+                versionString = string.Empty;
+                return -1;
+            }
             for (int i = 0; i < UnityInstallations.Count; i++)
-                if (UnityInstallations[i].version == version)
+                if (UnityInstallations[i].version == versionString)
                     return i;
         }
+        versionString = string.Empty;
         return -1;
     }
 
@@ -189,7 +198,7 @@ static class UnityHubUtils
         if (!Directory.Exists(s_dir))
         {
             Directory.CreateDirectory(s_dir);
-            Console.WriteLine("created local data directory \"{0}\"", s_dir);
+            Debug.WriteLine("created local data directory \"{0}\"", s_dir);
         }
     }
 
@@ -223,11 +232,31 @@ readonly struct UnityInstallation(string path, string version) : IComparable<Uni
     public override int GetHashCode() => path.GetHashCode();
 }
 
-readonly struct UnityProject(string path, UnityInstallation? unity)
+class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? unity)
 {
     public readonly string path = path;
     public readonly string name = Path.GetFileName(path);
+    public readonly DateTime lastModifiedDate = lastModifiedDate;
     public readonly UnityInstallation? unity = unity;
+
+    public static bool TryLoadUnityProject(string path, out UnityProject result)
+    {
+        try
+        {
+            var ind = UnityHubUtils.FindUnityVersionIndex(path, out var version);
+            UnityInstallation? unityInstallation = ind != -1 ? UnityHubUtils.UnityInstallations[ind] : null;
+            var lastModDate = new DirectoryInfo(path).LastWriteTime;
+            result = new(path, lastModDate, unityInstallation);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            MessageBoxManager.GetMessageBoxStandard("Unable to add project", exception.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+            Debug.WriteLine($"{exception.Message}\n{exception.StackTrace}");
+            result = default;
+            return false;
+        }
+    }
 
     public override string ToString() => $"{{\"{path}\", \"{name}\", {unity}}}";
 }
