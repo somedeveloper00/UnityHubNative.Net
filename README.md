@@ -42,3 +42,6 @@ dotnet publish -c Release -r win-x64
 ## Issues 🐞
 Please report all problems in the [Issues](https://github.com/somedeveloper00/UnityHubNative.Net/issues) section of this repository. 
 Make sure to include as many details as possible.
+
+## Contact 📧
+If you have any questions, feel free to contact me at [barari.saeed.am@outlook.com](mailto:barari.saeed.am@outlook.com?subject=NativeUnityHub.Net%20Inquiry&body=Hello,%20I%20have%20a%20question%20about%20your%20project.)
