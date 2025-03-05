@@ -124,14 +124,18 @@ class MainWindow : Window
                         {
                         }.AddChildren
                         ([
-                            //s_projectSearchBox = new TextBox
-                            //{
-                            //    Watermark = "Search projects...",
-                            //    HorizontalAlignment = HorizontalAlignment.Stretch,
-                            //    InnerRightContent = new Label
-                            //    {
-                            //    }
-                            //}.OnTextChanged(OnProjectSearchTextChanged).SetDock(Dock.Top),
+                            s_projectSearchBoxAutoComplete = new AutoCompleteBox
+                            {
+                                FilterMode = AutoCompleteFilterMode.None,
+                                IsTextCompletionEnabled = true,
+                                AsyncPopulator = PopulateUnityProjectSearchAutoCompletion,
+                                Watermark = "Search Projects",
+                                InnerRightContent = new Label
+                                {
+                                    Content = "🔍",
+                                    HorizontalAlignment = HorizontalAlignment.Right,
+                                },
+                            }.SetDock(Dock.Top),
                             new StackPanel
                             {
                                 Orientation = Orientation.Horizontal,
@@ -163,18 +167,6 @@ class MainWindow : Window
                                     IsEnabled = false,
                                 },
                             ]),
-                            s_projectSearchBoxAutoComplete = new AutoCompleteBox
-                            {
-                                FilterMode = AutoCompleteFilterMode.None,
-                                IsTextCompletionEnabled = true,
-                                AsyncPopulator = PopulateUnityProjectSearchAutoCompletion,
-                                Watermark = "Search Projects",
-                                InnerRightContent = new Label
-                                {
-                                    Content = "🔍",
-                                    HorizontalAlignment = HorizontalAlignment.Right,
-                                },
-                            }.SetDock(Dock.Top),
                             new DockPanel
                             {
                             }.AddChildren
