@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 static class UrlUtils
 {

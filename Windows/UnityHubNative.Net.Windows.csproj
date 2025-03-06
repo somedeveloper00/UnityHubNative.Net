@@ -4,10 +4,10 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net9.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <PublishAot>true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>True</PublishTrimmed>
+        <AssemblyName>UnityHubNative.Net</AssemblyName>
     </PropertyGroup>
 
     <!--for optimization-->
@@ -22,7 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Counter\Counter.csproj" />
+        <ProjectReference Include="..\Counter\UnityHubNative.Net.csproj" />
     </ItemGroup>
 
 </Project>

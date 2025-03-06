@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>True</PublishTrimmed>
+        <AssemblyName>UnityHubNative.Windows</AssemblyName>
+        <RootNamespace>UnityHubNative.Windows</RootNamespace>
+    </PropertyGroup>
+
+    <!--for optimization-->
+    <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+        <NoWin32Manifest>true</NoWin32Manifest>
+        <OptimizationPreference>size</OptimizationPreference>
+        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+        <DebugType>none</DebugType>
+        <InvariantGlobalization>false</InvariantGlobalization>
+        <StackTraceSupport>false</StackTraceSupport>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Counter\Counter.csproj" />
+    </ItemGroup>
+
+</Project>

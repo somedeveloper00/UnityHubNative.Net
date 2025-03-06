@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Counter
+namespace UnityHubNative.Net
 {
     sealed class UnityInstallationView : Panel
     {

@@ -3,7 +3,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Layout;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 public static class CommonTransitions
 {

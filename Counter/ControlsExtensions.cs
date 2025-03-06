@@ -3,7 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 public static class ControlsExtensions
 {
@@ -58,13 +58,47 @@ public static class ControlsExtensions
         return button;
     }
 
+    public static MenuItem OnClick(this MenuItem menuItem, params Action<MenuItem, RoutedEventArgs>[] callbacks)
+    {
+        for (int i = 0; i < callbacks.Length; i++)
+        {
+            int index = 0;
+            menuItem.Click += (obj, args) => callbacks[index]((MenuItem)obj!, args);
+        }
+
+        return menuItem;
+    }
+
+    public static MenuItem OnClick(this MenuItem menuItem, Action<MenuItem, RoutedEventArgs> callback)
+    {
+        menuItem.Click += (obj, args) => callback((MenuItem)obj!, args);
+        return menuItem;
+    }
+
+    public static MenuItem OnClick(this MenuItem menuItem, params Action[] callbacks)
+    {
+        for (int i = 0; i < callbacks.Length; i++)
+        {
+            int index = 0;
+            menuItem.Click += (obj, args) => callbacks[index]();
+        }
+
+        return menuItem;
+    }
+
+    public static MenuItem OnClick(this MenuItem menuItem, Action callback)
+    {
+        menuItem.Click += (obj, args) => callback();
+        return menuItem;
+    }
+
     public static Panel AddChildren(this Panel control, params Control[] children)
     {
         control.Children.AddRange(children);
         return control;
     }
 
-    public static ItemsControl AddItems(this ItemsControl control, params object[] items)
+    public static T AddItems<T>(this T control, params object[] items) where T : ItemsControl
     {
         for (int i = 0; i < items.Length; i++)
             control.Items.Add(items[i]);

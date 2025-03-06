@@ -1,4 +1,4 @@
-namespace Counter;
+namespace UnityHubNative.Net;
 
 internal class MainViewModel
 {

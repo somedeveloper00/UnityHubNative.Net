@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 struct MenuCommand(Func<bool> canExecute, Action executed) : ICommand
 {

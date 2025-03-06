@@ -4,12 +4,12 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia;
+using UnityHubNative.Net;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 class MainWindow : Window
 {
@@ -24,22 +24,20 @@ class MainWindow : Window
     private static SubmitableListBox s_unityProjectsParent;
     private static Button s_revealBtn;
     private static Button s_removeFromListBtn;
-    private static Button s_createNewBtn;
-    private static Button s_addExistingBtn;
     private static Button s_openWithBtn;
-    private static TextBox s_projectSearchBox;
     private static AutoCompleteBox s_projectSearchBoxAutoComplete;
+
+    private static MenuItem s_removeFromListMenuItem;
+    private static MenuItem s_revealInFileExplorerMenuItem;
+    private static MenuItem s_openInDifferentVersionMenuItem;
 
     public MainWindow(object data)
     {
         s_instance = this;
         DataContext = data;
-        Title = "Counter CounterApp";
+        Title = "UnityHubNative.Net";
         Content = CreateContent();
-        UnityHubUtils.LoadAll();
-        UpdateUnityVersionViews();
-        UpdateUnitySearchPathViews();
-        UpdateUnityProjectViews();
+        ReloadEverything();
         SizeToContent = SizeToContent.WidthAndHeight;
         TransparencyLevelHint =
         [
@@ -51,209 +49,238 @@ class MainWindow : Window
 #endif
     }
 
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        // focus on searchbar if typed a character
+        if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
+        {
+            if (!s_projectSearchBoxAutoComplete.IsKeyboardFocusWithin)
+            {
+                s_projectSearchBoxAutoComplete.Text += e.KeyModifiers == KeyModifiers.Shift ? e.Key.ToString() : e.Key.ToString().ToLower();
+                s_projectSearchBoxAutoComplete.Focus();
+                e.Handled = true;
+            }
+            return;
+        }
+
+        // focus on the list of escaped
+        if (e.Key == Key.Escape)
+        {
+            if (s_unityProjectsParent.SelectedItem != null)
+            {
+                s_unityProjectsParent.ContainerFromIndex(GetUnityProjectSelectedIndex())!.Focus();
+                s_projectSearchBoxAutoComplete.Text = string.Empty;
+            }
+
+            return;
+        }
+    }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        if (s_unityProjectsParent.SelectedItem != null)
+            s_unityProjectsParent.ContainerFromIndex(0)!.Focus();
+    }
+
+    private static void ReloadEverything()
+    {
+        UnityHubUtils.LoadAll();
+        UpdateUnityVersionViews();
+        UpdateUnitySearchPathViews();
+        UpdateUnityProjectViews();
+    }
+
     private static Control CreateContent() => new DockPanel
     {
         LastChildFill = true,
         HorizontalAlignment = HorizontalAlignment.Stretch,
         VerticalAlignment = VerticalAlignment.Stretch
     }.AddChildren
+    ([
+        new Menu
+        {
+        }.SetDock(Dock.Top).AddItems
         ([
-            new Menu
+            new MenuItem
             {
-            }.SetDock(Dock.Top).AddItems
+                Header = "_Project"
+            }.AddItems
             ([
                 new MenuItem
                 {
-                    Header = "_Project"
-                }.AddItems
-                ([
-                    new MenuItem
-                    {
-                        Header = "_Create New Project",
-                        HotKey = new KeyGesture(Key.N, KeyModifiers.Control),
-                        Command = new MenuCommand(executed: CreateNewProject),
-                    },
-                    new MenuItem
-                    {
-                        Header = "_Add Existing Project",
-                        HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
-                        Command = new MenuCommand(executed: AddExistingProject),
-                    },
-                    new MenuItem
-                    {
-                        Header = "_Remove From List",
-                        HotKey = new KeyGesture(Key.OemMinus, KeyModifiers.Control),
-                        Command = new MenuCommand(IsAnyProjectSelected, RemoveSelectedUnityProjectFromList),
-                    },
-                    new MenuItem
-                    {
-                        Header = "_Reveal In File Explorer",
-                        HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
-                        Command = new MenuCommand(IsAnyProjectSelected, RevealSelectedUnityProjectInExplorer),
-                    },
-                ]),
+                    Header = "_Create New Project",
+                    HotKey = new KeyGesture(Key.N, KeyModifiers.Control),
+                    InputGesture = new KeyGesture(Key.N, KeyModifiers.Control),
+                }.OnClick(OnCreateNewProjectClicked),
                 new MenuItem
                 {
-                    Header = "_Open"
-                }.AddItems
-                ([
-                    new MenuItem
-                    {
-                        Header = "New"
-                    },
-                    new MenuItem
-                    {
-                        Header = "Load"
-                    }
-                ])
+                    Header = "_Add Existing Project",
+                    HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
+                    InputGesture = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift)
+                }.OnClick(OnAddExistingProjectClicked),
+                s_removeFromListMenuItem = new MenuItem
+                {
+                    Header = "_Remove From List",
+                    HotKey = new KeyGesture(Key.Subtract, KeyModifiers.Control),
+                    InputGesture = new KeyGesture(Key.Subtract, KeyModifiers.Control)
+                }.OnClick(OnRemoveProjectFromListClicked),
+                new Separator(),
+                s_revealInFileExplorerMenuItem = new MenuItem
+                {
+                    Header = "_Reveal In File Explorer",
+                    HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
+                    InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
+                }.OnClick(OnRevealProjectClicked),
+                s_openInDifferentVersionMenuItem = new MenuItem
+                {
+                    Header = "_Open In Different Version",
+                    HotKey = new KeyGesture(Key.O, KeyModifiers.Control),
+                    InputGesture = new KeyGesture(Key.O, KeyModifiers.Control),
+                }.OnClick(OnOpenWithClicked),
+                new MenuItem
+                {
+                    Header = "_Reload Data",
+                    HotKey = new KeyGesture(Key.R, KeyModifiers.Control),
+                    InputGesture = new KeyGesture(Key.R, KeyModifiers.Control),
+                }.OnClick(ReloadEverything),
             ]),
-            new DockPanel
+            new MenuItem
             {
-            }.AddChildren
+                Header = "_Window",
+            }.AddItems
             ([
-                new TabControl
+                new MenuItem
                 {
-                    Margin = new(5),
-                }.AddItems
-                ([
-                    new TabItem
+                    Header = "_Close Window",
+                    HotKey = new(Key.W, KeyModifiers.Control),
+                    InputGesture = new(Key.W, KeyModifiers.Control)
+                }.OnClick(static () => s_instance.Close()),
+                new MenuItem
+                {
+                    Header = "_About UnityHubNative.Net",
+                }.OnClick(OnAboutClicked),
+            ]),
+        ]),
+        new DockPanel
+        {
+        }.AddChildren
+        ([
+            new TabControl
+            {
+                TabStripPlacement = Dock.Top,
+            }.AddItems
+            ([
+                new TabItem
+                {
+                    Header = "Projects",
+                    Content = new DockPanel
                     {
-                        Header = "Projects",
-                        FontSize = 15,
-                        Content = new DockPanel
+                    }.AddChildren
+                    ([
+                        s_projectSearchBoxAutoComplete = new SubmittableAutoCompleteBox<UnityProjectView>
                         {
+                            FilterMode = AutoCompleteFilterMode.None,
+                            IsTextCompletionEnabled = true,
+                            AsyncPopulator = PopulateUnityProjectSearchAutoCompletion,
+                            Watermark = "Search Projects",
+                            InnerRightContent = new Label
+                            {
+                                Content = "🔍",
+                                HorizontalAlignment = HorizontalAlignment.Right,
+                            },
+                        }.OnSubmit(u =>
+                        {
+                            u.unityProject.OpenProject();
+                            return;
+                        }).SetDock(Dock.Top),
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Margin = new(0, 5),
+                            Spacing = 2,
+                        }.SetDock(Dock.Top).AddChildren
+                        ([
+                            s_revealBtn = new Button
+                            {
+                                Content = "Reveal",
+                                IsEnabled = false,
+                            }.OnClick(OnRevealProjectClicked),
+                            s_removeFromListBtn = new Button
+                            {
+                                Content = "Remove From List",
+                                IsEnabled = false,
+                            }.OnClick(OnRemoveProjectFromListClicked),
+                            new Button
+                            {
+                                Content = "Create New"
+                            }.OnClick(OnCreateNewProjectClicked),
+                            new Button
+                            {
+                                Content = "Add Existing"
+                            }.OnClick(OnAddExistingProjectClicked),
+                            s_openWithBtn = new Button
+                            {
+                                Content = "Open With",
+                                IsEnabled = false,
+                            }.OnClick(OnOpenWithClicked),
+                        ]),
+                        new DockPanel
+                        {
+                            Margin = new(0, 10)
                         }.AddChildren
                         ([
-                            s_projectSearchBoxAutoComplete = new AutoCompleteBox
+                            new ScrollViewer
                             {
-                                FilterMode = AutoCompleteFilterMode.None,
-                                IsTextCompletionEnabled = true,
-                                AsyncPopulator = PopulateUnityProjectSearchAutoCompletion,
-                                Watermark = "Search Projects",
-                                InnerRightContent = new Label
+                                Content = s_unityProjectsParent = new SubmitableListBox
                                 {
-                                    Content = "🔍",
-                                    HorizontalAlignment = HorizontalAlignment.Right,
-                                },
-                            }.SetDock(Dock.Top),
-                            new StackPanel
-                            {
-                                Orientation = Orientation.Horizontal,
-                                Margin = new(0, 5),
-                                Spacing = 2,
-                            }.SetDock(Dock.Top).AddChildren
-                            ([
-                                s_revealBtn = new Button
-                                {
-                                    Content = "Reveal",
-                                    IsEnabled = false,
-                                },
-                                s_removeFromListBtn = new Button
-                                {
-                                    Content = "Remove From List",
-                                    IsEnabled = false,
-                                },
-                                s_createNewBtn = new Button
-                                {
-                                    Content = "Create New"
-                                },
-                                s_addExistingBtn = new Button
-                                {
-                                    Content = "Add Existing"
-                                }.OnClick(AddExistingProject),
-                                s_openWithBtn = new Button
-                                {
-                                    Content = "Open With",
-                                    IsEnabled = false,
-                                },
-                            ]),
-                            new DockPanel
-                            {
-                            }.AddChildren
-                            ([
-                                new ScrollViewer
-                                {
-                                    Content = s_unityProjectsParent = new SubmitableListBox
-                                    {
-                                    }.AddOnSubmit(OnUnityProjectListSubmitted).OnSelectionChanged(UnityProjectSelectedIndexChanged)
-                                },
-                            ]),
-                        ])
-                    },
-                    new TabItem
+                                    WrapSelection = true,
+                                    SelectionMode = SelectionMode.AlwaysSelected | SelectionMode.Single,
+                                    SelectedIndex = 0,
+                                }.AddOnSubmit(OnUnityProjectListSubmitted).OnSelectionChanged(UnityProjectSelectedIndexChanged)
+                            },
+                        ]),
+                    ])
+                },
+                new TabItem
+                {
+                    Header = "Unity Versions",
+                    //FontSize = 15,
+                    Content = new DockPanel
                     {
-                        Header = "Unity Versions",
-                        FontSize = 15,
-                        Content = new DockPanel
+                    }.AddChildren
+                    ([
+                        new DockPanel
                         {
-                        }.AddChildren
+                        }.SetDock(Dock.Bottom).AddChildren
                         ([
-                            new DockPanel
-                            {
-                            }.SetDock(Dock.Bottom).AddChildren
-                            ([
-                                new Label
-                                {
-                                    Content = "Install Search Paths",
-                                    HorizontalAlignment = HorizontalAlignment.Left
-                                }.SetDock(Dock.Top),
-                                new StackPanel
-                                {
-                                    Margin = new(5),
-                                    Width = 120
-                                }.SetDock(Dock.Right).AddChildren
-                                ([
-                                    new Button
-                                    {
-                                        Content = "Add Location",
-                                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                                        IsEnabled = true,
-                                    }.SetTooltip("Adds a new Unity search path")
-                                    .OnClick(AddNewUnitySearchPath),
-                                    s_unityInstallationSearchRemoveBtn = new Button
-                                    {
-                                        Content = "Remove\nLocation",
-                                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                                        HorizontalContentAlignment = HorizontalAlignment.Center,
-                                        IsEnabled = false
-                                    }.SetTooltip("Removes the selected Unity search path item")
-                                    .OnClick(RemoveSelectedUnitySearchPath)
-                                ]),
-                                new DockPanel
-                                {
-                                }.AddChildren
-                                ([
-                                    new ScrollViewer
-                                    {
-                                        Content = s_unityInstalltionSearchPathsParent = new ListBox
-                                        {
-                                        }.OnSelectionChanged(UnityInstallationSearchPathSelectedIndexChanged)
-                                    }
-                                ])
-                            ]),
                             new Label
                             {
-                                Content = "Detected Installations",
+                                Content = "Install Search Paths",
+                                HorizontalAlignment = HorizontalAlignment.Left
                             }.SetDock(Dock.Top),
                             new StackPanel
                             {
-                                Width = 120,
                                 Margin = new(5),
-                                Spacing = 5,
+                                Width = 120
                             }.SetDock(Dock.Right).AddChildren
                             ([
                                 new Button
                                 {
-                                    Content = "Install New",
-                                    HorizontalAlignment = HorizontalAlignment.Stretch
-                                }.SetTooltip($"Install a new Unity Editor version\n{InstallUnityUrl}")
-                                .OnClick(() => UrlUtils.OpenUrl(InstallUnityUrl)),
-                                new Button
+                                    Content = "Add Location",
+                                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                                    IsEnabled = true,
+                                }.SetTooltip("Adds a new Unity search path")
+                                .OnClick(AddNewUnitySearchPath),
+                                s_unityInstallationSearchRemoveBtn = new Button
                                 {
-                                    Content = "Reload",
-                                    HorizontalAlignment = HorizontalAlignment.Stretch
-                                }.SetTooltip("Reload the list")
-                                .OnClick(UnityHubUtils.LoadUnityInstallations, UpdateUnityVersionViews),
+                                    Content = "Remove\nLocation",
+                                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                                    IsEnabled = false
+                                }.SetTooltip("Removes the selected Unity search path item")
+                                .OnClick(RemoveSelectedUnitySearchPath)
                             ]),
                             new DockPanel
                             {
@@ -261,18 +288,54 @@ class MainWindow : Window
                             ([
                                 new ScrollViewer
                                 {
-                                    Content = s_unityInstallationsParent = new ListBox
+                                    Content = s_unityInstalltionSearchPathsParent = new ListBox
                                     {
-                                        SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
-                                        Focusable = true
-                                    }
-                                },
+                                    }.OnSelectionChanged(UnityInstallationSearchPathSelectedIndexChanged)
+                                }
                             ])
+                        ]),
+                        new Label
+                        {
+                            Content = "Detected Installations",
+                        }.SetDock(Dock.Top),
+                        new StackPanel
+                        {
+                            Width = 120,
+                            Margin = new(5),
+                            Spacing = 5,
+                        }.SetDock(Dock.Right).AddChildren
+                        ([
+                            new Button
+                            {
+                                Content = "Install New",
+                                HorizontalAlignment = HorizontalAlignment.Stretch
+                            }.SetTooltip($"Install a new Unity Editor version\n{InstallUnityUrl}")
+                            .OnClick(() => UrlUtils.OpenUrl(InstallUnityUrl)),
+                            new Button
+                            {
+                                Content = "Reload",
+                                HorizontalAlignment = HorizontalAlignment.Stretch
+                            }.SetTooltip("Reload the list")
+                            .OnClick(UnityHubUtils.LoadUnityInstallations, UpdateUnityVersionViews),
+                        ]),
+                        new DockPanel
+                        {
+                        }.AddChildren
+                        ([
+                            new ScrollViewer
+                            {
+                                Content = s_unityInstallationsParent = new ListBox
+                                {
+                                    SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+                                    Focusable = true
+                                }
+                            },
                         ])
-                    }
-                ])
+                    ])
+                }
             ])
-        ]);
+        ])
+    ]);
 
     private static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string? filter, CancellationToken _)
     {
@@ -296,10 +359,10 @@ class MainWindow : Window
 
     private static void OnUnityProjectListSubmitted()
     {
-        if (IsAnyProjectSelected())
-        {
-            ((UnityProjectView)s_unityProjectsParent!.Items[GetUnityProjectSelectedIndex()]!).OpenProject();
-        }
+        if (!IsAnyProjectSelected())
+            return;
+        UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].OpenProject();
+
     }
 
     private static void RemoveSelectedUnitySearchPath(Button button, RoutedEventArgs args)
@@ -330,7 +393,13 @@ class MainWindow : Window
     {
         var index = GetUnityProjectSelectedIndex();
         Debug.WriteLine($"selection changed to {index}");
-        s_revealBtn.IsEnabled = s_removeFromListBtn.IsEnabled = s_createNewBtn.IsEnabled = s_openWithBtn.IsEnabled = IsAnyProjectSelected();
+        bool isAnySelected = IsAnyProjectSelected();
+
+        // menu bar buttons
+        s_revealBtn.IsEnabled = s_removeFromListBtn.IsEnabled = s_openWithBtn.IsEnabled = isAnySelected;
+
+        // menu items 
+        s_removeFromListMenuItem.IsEnabled = s_revealInFileExplorerMenuItem.IsEnabled = s_openInDifferentVersionMenuItem.IsEnabled = isAnySelected;
     }
 
     private static async void AddNewUnitySearchPath()
@@ -364,19 +433,14 @@ class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(s_instance);
         }
     }
 
-    private static int GetSelectedUnityInstallationIndex() => s_unityInstallationsParent.SelectedIndex;
     private static int GetSelectedUnityInstallationSearchPathsIndex() => s_unityInstalltionSearchPathsParent.SelectedIndex;
-    private static int GetUnityProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex;
 
-    private static void RevealSelectedUnityProjectInExplorer()
-    {
-        throw new NotImplementedException();
-    }
+    private static int GetUnityProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex;
 
     private static bool IsAnyProjectSelected()
     {
@@ -384,14 +448,7 @@ class MainWindow : Window
         return ind >= 0 && ind < UnityHubUtils.UnityProjects.Count;
     }
 
-    private static bool CanRemoveSelectedUnityProjectFromList() => IsAnyProjectSelected();
-
-    private static void RemoveSelectedUnityProjectFromList()
-    {
-        throw new NotImplementedException();
-    }
-
-    private static async void AddExistingProject()
+    private static async void OnAddExistingProjectClicked()
     {
         try
         {
@@ -409,7 +466,7 @@ class MainWindow : Window
                     continue;
                 if (UnityHubUtils.UnityProjects.Any(p => p.path == folder))
                 {
-                    MessageBoxManager.GetMessageBoxStandard($"Project \"{folder}\" has already been added.", "Cannot add project", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info);
+                    _ = MessageBoxManager.GetMessageBoxStandard($"Project \"{folder}\" has already been added.", "Cannot add project", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info).ShowWindowDialogAsync(s_instance);
                     continue;
                 }
                 bool dirty = false;
@@ -428,20 +485,30 @@ class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
+            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(s_instance);
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
         }
     }
 
-    private static void CreateNewProject()
+    private static void OnOpenWithClicked()
     {
-        throw new NotImplementedException();
+        var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
+        dialogue.ShowDialog(s_instance);
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    private static void OnCreateNewProjectClicked() => ShowTbiDialogue();
+
+    private static void OnRemoveProjectFromListClicked()
     {
-        base.OnKeyDown(e);
+        UnityHubUtils.UnityProjects.RemoveAt(GetUnityProjectSelectedIndex());
+        UnityHubUtils.SaveUnityProjects();
+        UnityHubUtils.LoadUnityProjects();
+        UpdateUnityProjectViews();
     }
+
+    private static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
+
+    private static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(s_instance);
 
     private static void UpdateUnityVersionViews()
     {
@@ -482,6 +549,11 @@ class MainWindow : Window
         // delete
         for (int i = parent.Items.Count - 1; i >= items.Count; i--)
             parent.Items.RemoveAt(i);
+    }
+
+    private static void ShowTbiDialogue()
+    {
+        _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(s_instance);
     }
 }
 

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35716.79
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Counter", "Counter\Counter.csproj", "{B7ECF9E1-6808-4F83-BC8E-C6B940D82304}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityHubNative.Net", "Counter\UnityHubNative.Net.csproj", "{B7ECF9E1-6808-4F83-BC8E-C6B940D82304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows", "Windows\Windows.csproj", "{48DAB9C0-0C77-40C4-BF07-F12C0BDA2C43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityHubNative.Net.Windows", "Windows\UnityHubNative.Net.Windows.csproj", "{48DAB9C0-0C77-40C4-BF07-F12C0BDA2C43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,8 +1,9 @@
 using System.Data;
 using System.Diagnostics;
 using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 static class UnityHubUtils
 {
@@ -89,9 +90,9 @@ static class UnityHubUtils
         }
         catch (Exception ex)
         {
-            var msg = MessageBoxManager.GetMessageBoxStandard("Error while saving Unity Installations", ex.Message + " | Retry?", MsBox.Avalonia.Enums.ButtonEnum.OkCancel, MsBox.Avalonia.Enums.Icon.Error, Avalonia.Controls.WindowStartupLocation.CenterScreen);
+            var msg = MessageBoxManager.GetMessageBoxStandard("Error while saving Unity Installations", ex.Message + " | Retry?", ButtonEnum.OkCancel, Icon.Error, Avalonia.Controls.WindowStartupLocation.CenterScreen);
             var result = await msg.ShowAsync();
-            if (result == MsBox.Avalonia.Enums.ButtonResult.Ok)
+            if (result == ButtonResult.Ok)
                 SaveUnityInstallationSearchPaths();
         }
     }
@@ -155,9 +156,9 @@ static class UnityHubUtils
         }
         catch (Exception ex)
         {
-            var msg = MessageBoxManager.GetMessageBoxStandard("Error while saving Unity Projects", ex.Message + " | Retry?", MsBox.Avalonia.Enums.ButtonEnum.OkCancel, MsBox.Avalonia.Enums.Icon.Error, Avalonia.Controls.WindowStartupLocation.CenterScreen);
+            var msg = MessageBoxManager.GetMessageBoxStandard("Error while saving Unity Projects", ex.Message + " | Retry?", ButtonEnum.OkCancel, Icon.Error, Avalonia.Controls.WindowStartupLocation.CenterScreen);
             var result = await msg.ShowAsync();
-            if (result == MsBox.Avalonia.Enums.ButtonResult.Ok)
+            if (result == ButtonResult.Ok)
                 SaveUnityProjects();
         }
     }
@@ -239,6 +240,8 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
     public readonly DateTime lastModifiedDate = lastModifiedDate;
     public readonly UnityInstallation? unity = unity;
 
+    public override string ToString() => $"{{\"{path}\", \"{name}\", {unity}}}";
+
     public static bool TryLoadUnityProject(string path, out UnityProject result)
     {
         try
@@ -251,12 +254,70 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
         }
         catch (Exception exception)
         {
-            MessageBoxManager.GetMessageBoxStandard("Unable to add project", exception.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning);
+            MessageBoxManager.GetMessageBoxStandard("Unable to add project", exception.Message, ButtonEnum.Ok, Icon.Warning);
             Debug.WriteLine($"{exception.Message}\n{exception.StackTrace}");
             result = default;
             return false;
         }
     }
 
-    public override string ToString() => $"{{\"{path}\", \"{name}\", {unity}}}";
+    public void OpenProject(UnityPlatform platform = UnityPlatform.CurrentPlatform)
+    {
+        Debug.WriteLine("opening " + path);
+        if (!Directory.Exists(path))
+        {
+            MessageBoxManager.GetMessageBoxStandard("Cannot Open Project", $"Cannot open project at {path} because it could not be found.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+            return;
+        }
+        if (!File.Exists(unity?.path))
+        {
+            MessageBoxManager.GetMessageBoxStandard("Cannot Open Project", $"Cannot open project at {path} because Unity could not be found at {unity?.path}.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+            return;
+        }
+        try
+        {
+            Task.Run(() => Process.Start(new ProcessStartInfo
+            {
+                FileName = unity?.path,
+                Arguments = $"-projectPath \"{path}\" {(platform != UnityPlatform.CurrentPlatform ? $"-buildTarget {platform.ToCmdStr()}" : string.Empty)}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            }));
+        }
+        catch (Exception ex)
+        {
+            MessageBoxManager.GetMessageBoxStandard("Cannot Open Project", $"Cannot open project at {path} because an error occurred: {ex.Message}", ButtonEnum.Ok, Icon.Error).ShowAsync();
+        }
+    }
+
+}
+
+public enum UnityPlatform
+{
+    CurrentPlatform,
+    Windows,
+    MacOs,
+    Linux,
+    iOS,
+    Android,
+    WebGL,
+    UWP,
+}
+
+static class UnityPlatformExtensions
+{
+    public static string ToCmdStr(this UnityPlatform platform) => platform switch
+    {
+        UnityPlatform.CurrentPlatform => "",
+        UnityPlatform.Windows => "win64",
+        UnityPlatform.MacOs => "osxuniversal",
+        UnityPlatform.Linux => "linux64",
+        UnityPlatform.iOS => "ios",
+        UnityPlatform.Android => "android",
+        UnityPlatform.WebGL => "webgl",
+        UnityPlatform.UWP => "windowsstoreapps",
+        _ => throw new NotImplementedException(),
+    };
 }

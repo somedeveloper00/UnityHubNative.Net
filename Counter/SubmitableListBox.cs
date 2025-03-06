@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 class SubmitableListBox : ListBox
 {

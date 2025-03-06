@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Counter;
+namespace UnityHubNative.Net;
 
 /// <summary>
 /// view for Unity installation search path
