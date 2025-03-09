@@ -404,7 +404,7 @@ class MainWindow : Window
                                         }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
                                         s_acrylicCheckbox = new CheckBox
                                         {
-                                            IsChecked = UnityHubNativeNetApp.Config.transparent,
+                                            IsChecked = UnityHubNativeNetApp.Config.acrylic,
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right),
                                     ]).SetDock(Dock.Top),
