@@ -33,6 +33,7 @@ class MainWindow : Window
     private static CheckBox s_transparentCheckbox;
     private static CheckBox s_acrylicCheckbox;
     private static DockPanel s_transparentPanel;
+    private static Slider s_backgroundBlurIntensitySlider;
 
     public MainWindow(object data)
     {
@@ -97,7 +98,11 @@ class MainWindow : Window
             ];
 #if Windows
 
-            Background = Brushes.Transparent;
+            Background = UnityHubNativeNetApp.Config.acrylic
+                ? new SolidColorBrush(
+                    ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark ? Colors.Black : Colors.White,
+                    1 - UnityHubNativeNetApp.Config.blurIntensity)
+                : Brushes.Transparent;
 #endif
         }
     }
@@ -379,29 +384,71 @@ class MainWindow : Window
                             ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
                         }.SetDock(Dock.Top).AddItems
                         ([
-                            s_transparentPanel = new DockPanel
+                            new SettingsExpanderItem
                             {
-                                IsEnabled = UnityHubNativeNetApp.Config.transparent,
-                                LastChildFill = false,
-                            }.AddChildren
-                            ([
-                                new TextBlock
+                                Content = s_transparentPanel = new DockPanel
                                 {
-                                    Text = "Acrilyc",
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
-                                s_acrylicCheckbox = new CheckBox
+                                    IsEnabled = UnityHubNativeNetApp.Config.transparent,
+                                    LastChildFill = false,
+                                }.AddChildren
+                                ([
+                                    new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Acrilyc",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
+                                        s_acrylicCheckbox = new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.transparent,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right),
+                                    ]).SetDock(Dock.Top),
+                                ]),
+                            },
+                            new SettingsExpanderItem
+                            {
+                                Content = new DockPanel
                                 {
-                                    IsChecked = UnityHubNativeNetApp.Config.transparent,
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right)
-                            ])
+                                    LastChildFill = false,
+                                    IsEnabled = UnityHubNativeNetApp.Config.transparent && UnityHubNativeNetApp.Config.acrylic,
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Background Blur Intensity",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.SetTooltip("Changes the intensity of the background blur.").SetDock(Dock.Left),
+                                    s_backgroundBlurIntensitySlider = new Slider
+                                    {
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                        Minimum = 0,
+                                        Maximum = 1,
+                                        Width = 100,
+                                        TickFrequency = 0.1,
+                                        TickPlacement = TickPlacement.BottomRight,
+                                        IsSnapToTickEnabled = true,
+                                        Value = UnityHubNativeNetApp.Config.blurIntensity
+                                    }.OnValueChanged(OnAcrylicIntensitySliderValueChanged).SetDock(Dock.Right)
+                                ]).SetDock(Dock.Top)
+                            }
                         ])
                     ])
                 }
             ])
         ])
     ]);
+
+    private static void OnAcrylicIntensitySliderValueChanged()
+    {
+        UnityHubNativeNetApp.Config.blurIntensity = (float)s_backgroundBlurIntensitySlider.Value;
+        s_instance.SetupBackground();
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
 
     private static void OnAcrylicCheckboxChanged()
     {

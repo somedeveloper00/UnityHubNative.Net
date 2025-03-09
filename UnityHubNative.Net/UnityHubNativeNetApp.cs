@@ -47,10 +47,11 @@ public sealed class UnityHubNativeNetApp : Application
         try
         {
             var txt = File.ReadAllLines(Paths.ConfigPath);
-            return new()
+            return new AppConfig()
             {
-                transparent = txt[0] == "true",
-                acrylic = txt[1] == "true",
+                transparent = txt.Length >= 1 && txt[0] == "true",
+                acrylic = txt.Length >= 2 && txt[1] == "true",
+                blurIntensity = txt.Length >= 3 && float.TryParse(txt[2], out var acrylicAmount) ? acrylicAmount : 0.2f
             };
         }
         catch (Exception ex)
@@ -66,6 +67,7 @@ public sealed class UnityHubNativeNetApp : Application
         [
             config.transparent ? "true" : "false",
             config.acrylic ? "true" : "false",
+            config.blurIntensity.ToString(),
         ]);
     }
 
@@ -73,5 +75,6 @@ public sealed class UnityHubNativeNetApp : Application
     {
         public bool transparent;
         public bool acrylic;
+        public float blurIntensity;
     }
 }

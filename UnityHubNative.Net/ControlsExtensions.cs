@@ -7,9 +7,15 @@ namespace UnityHubNative.Net;
 
 public static class ControlsExtensions
 {
-    public static T OnCheckChanged<T>(this T checkbox, Action value) where T : CheckBox
+    public static T OnValueChanged<T>(this T slider, Action callback) where T : RangeBase
     {
-        checkbox.IsCheckedChanged += (_, _) => value();
+        slider.ValueChanged += (_, _) => callback();
+        return slider;
+    }
+
+    public static T OnCheckChanged<T>(this T checkbox, Action callback) where T : CheckBox
+    {
+        checkbox.IsCheckedChanged += (_, _) => callback();
         return checkbox;
     }
 
