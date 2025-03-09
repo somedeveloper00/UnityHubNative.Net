@@ -7,6 +7,12 @@ namespace UnityHubNative.Net;
 
 public static class ControlsExtensions
 {
+    public static T OnCheckChanged<T>(this T checkbox, Action value) where T : CheckBox
+    {
+        checkbox.IsCheckedChanged += (_, _) => value();
+        return checkbox;
+    }
+
     public static T OnKeyDown<T>(this T element, params Action<T, KeyEventArgs>[] callbacks) where T : InputElement
     {
         for (int i = 0; i < callbacks.Length; i++)
@@ -92,7 +98,7 @@ public static class ControlsExtensions
         return menuItem;
     }
 
-    public static Panel AddChildren(this Panel control, params Control[] children)
+    public static T AddChildren<T>(this T control, params Control[] children) where T : Panel
     {
         control.Children.AddRange(children);
         return control;

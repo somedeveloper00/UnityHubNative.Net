@@ -10,28 +10,23 @@ static class UnityHubUtils
     public static List<UnityInstallation> UnityInstallations = [];
     public static List<UnityProject> UnityProjects = [];
     public static List<string> UnityInstallationSearchPaths = [];
-
-    static readonly string s_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UnityHubNative");
-    static readonly string s_searchPathsPath = Path.Combine(s_dir, "editorPaths.txt");
-    static readonly string s_projectPathsPath = Path.Combine(s_dir, "projects.txt");
-
     static readonly string[] s_unityInstallationSearchPathsDefault = [
-#if OS_WINDOWS
+#if Windows
         "C:\\Program Files",
         "C:\\Program Files\\Unity Hub",
         "C:\\Program Files\\Unity\\Hub\\Editor",
-#elif OS_LINUX
-#elif OS_MAC
+#elif Linux
+#elif OSX
         "/Applications/Unity Hub.app"
 #endif
     ];
 
     static readonly string s_executableRelativePath =
-#if OS_WINDOWS
+#if Windows
         "Editor\\Unity.exe"
-#elif OS_LINUX
+#elif Linux
         "Editor/Unity"
-#elif OS_MAC
+#elif OSX
         "Contents/MacOS/Unity"
 #endif
     ;
@@ -58,13 +53,12 @@ static class UnityHubUtils
     /// </summary>
     public static void LoadUnityInstallationSearchPaths()
     {
-        EnsureSaveDirectoryExists();
         UnityInstallationSearchPaths.Clear();
-        bool exists = File.Exists(s_searchPathsPath);
+        bool exists = File.Exists(Paths.SearchPathsPath);
         if (exists)
         {
-            Debug.WriteLine("found Unity installation search paths data at \"{0}\"", s_searchPathsPath);
-            UnityInstallationSearchPaths.AddRange(File.ReadAllLines(s_searchPathsPath));
+            Debug.WriteLine("found Unity installation search paths data at \"{0}\"", Paths.SearchPathsPath);
+            UnityInstallationSearchPaths.AddRange(File.ReadAllLines(Paths.SearchPathsPath));
         }
         else
         {
@@ -82,11 +76,10 @@ static class UnityHubUtils
     /// </summary>
     public static async void SaveUnityInstallationSearchPaths()
     {
-        EnsureSaveDirectoryExists();
         try
         {
-            File.WriteAllLines(s_searchPathsPath, UnityInstallationSearchPaths);
-            Debug.WriteLine("saved Unity installation paths to \"{0}\"", s_searchPathsPath);
+            File.WriteAllLines(Paths.SearchPathsPath, UnityInstallationSearchPaths);
+            Debug.WriteLine("saved Unity installation paths to \"{0}\"", Paths.SearchPathsPath);
         }
         catch (Exception ex)
         {
@@ -130,11 +123,10 @@ static class UnityHubUtils
     /// </summary>
     public static void LoadUnityProjects()
     {
-        EnsureSaveDirectoryExists();
         UnityProjects.Clear();
-        if (File.Exists(s_projectPathsPath))
+        if (File.Exists(Paths.ProjectPathsPath))
         {
-            var lines = File.ReadAllLines(s_projectPathsPath);
+            var lines = File.ReadAllLines(Paths.ProjectPathsPath);
             for (int i = 0; i < lines.Length; i++)
                 if (UnityProject.TryLoadUnityProject(lines[i], out var result))
                     UnityProjects.Add(result);
@@ -151,8 +143,7 @@ static class UnityHubUtils
     {
         try
         {
-            EnsureSaveDirectoryExists();
-            File.WriteAllLines(s_projectPathsPath, UnityProjects.Select(p => p.path));
+            File.WriteAllLines(Paths.ProjectPathsPath, UnityProjects.Select(p => p.path));
         }
         catch (Exception ex)
         {
@@ -169,7 +160,6 @@ static class UnityHubUtils
     /// </summary>
     public static int FindUnityVersionIndex(string path, out string versionString)
     {
-        EnsureSaveDirectoryExists();
         var projectVersionFile = Path.Combine(path, s_projectVersionPath);
         if (File.Exists(projectVersionFile))
         {
@@ -192,15 +182,6 @@ static class UnityHubUtils
         }
         versionString = string.Empty;
         return -1;
-    }
-
-    private static void EnsureSaveDirectoryExists()
-    {
-        if (!Directory.Exists(s_dir))
-        {
-            Directory.CreateDirectory(s_dir);
-            Debug.WriteLine("created local data directory \"{0}\"", s_dir);
-        }
     }
 
     private static string ExtractVersionFromDirName(string v)

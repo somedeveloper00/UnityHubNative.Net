@@ -21,7 +21,9 @@ sealed class AboutDialogue : Window
         ];
         CanResize = false;
         SizeToContent = SizeToContent.WidthAndHeight;
+#if Windows
         Background = Brushes.Transparent;
+#endif
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         Focusable = true;
     }

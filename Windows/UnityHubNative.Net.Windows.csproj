@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -8,6 +8,7 @@
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>True</PublishTrimmed>
         <AssemblyName>UnityHubNative.Net</AssemblyName>
+        <DefineConstants>$(DefineConstants);OS_WINDOWS</DefineConstants>
     </PropertyGroup>
 
     <!--for optimization-->
@@ -21,8 +22,9 @@
         <UseSystemResourceKeys>true</UseSystemResourceKeys>
     </PropertyGroup>
 
+
     <ItemGroup>
-        <ProjectReference Include="..\Counter\UnityHubNative.Net.csproj" />
+        <ProjectReference Include="..\UnityHubNative.Net\UnityHubNative.Net.csproj" />
     </ItemGroup>
 
 </Project>

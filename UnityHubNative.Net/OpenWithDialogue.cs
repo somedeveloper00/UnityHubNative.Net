@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using UnityHubNative.Net;
 
 namespace UnityHubNative.Net;
 
@@ -35,7 +34,9 @@ sealed class OpenWithDialogue : Window
         _unityVersionListBox!.Focus();
         CanResize = false;
         SizeToContent = SizeToContent.WidthAndHeight;
+#if Windows
         Background = Brushes.Transparent;
+#endif
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
     }
 

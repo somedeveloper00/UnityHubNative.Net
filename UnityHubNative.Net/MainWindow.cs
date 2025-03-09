@@ -6,8 +6,8 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using FluentAvalonia.UI.Controls;
 using MsBox.Avalonia;
-using UnityHubNative.Net;
 
 namespace UnityHubNative.Net;
 
@@ -30,6 +30,9 @@ class MainWindow : Window
     private static MenuItem s_removeFromListMenuItem;
     private static MenuItem s_revealInFileExplorerMenuItem;
     private static MenuItem s_openInDifferentVersionMenuItem;
+    private static CheckBox s_transparentCheckbox;
+    private static CheckBox s_acrylicCheckbox;
+    private static DockPanel s_transparentPanel;
 
     public MainWindow(object data)
     {
@@ -39,11 +42,9 @@ class MainWindow : Window
         Content = CreateContent();
         ReloadEverything();
         SizeToContent = SizeToContent.WidthAndHeight;
-        TransparencyLevelHint =
-        [
-            WindowTransparencyLevel.Mica,
-        ];
-        Background = Brushes.Transparent;
+        SetupBackground();
+        ActualThemeVariantChanged += (_, _) => SetupBackground();
+
 #if DEBUG
         this.AttachDevTools();
 #endif
@@ -57,8 +58,9 @@ class MainWindow : Window
         {
             if (!s_projectSearchBoxAutoComplete.IsKeyboardFocusWithin)
             {
-                s_projectSearchBoxAutoComplete.Text += e.KeyModifiers == KeyModifiers.Shift ? e.Key.ToString() : e.Key.ToString().ToLower();
                 s_projectSearchBoxAutoComplete.Focus();
+                s_projectSearchBoxAutoComplete.Text += e.KeyModifiers == KeyModifiers.Shift ? e.Key.ToString() : e.Key.ToString().ToLower();
+                s_projectSearchBoxAutoComplete.CaretIndex = s_projectSearchBoxAutoComplete.Text.Length;
                 e.Handled = true;
             }
             return;
@@ -82,6 +84,22 @@ class MainWindow : Window
         base.OnOpened(e);
         if (s_unityProjectsParent.SelectedItem != null)
             s_unityProjectsParent.ContainerFromIndex(0)!.Focus();
+    }
+
+    void SetupBackground()
+    {
+        if (UnityHubNativeNetApp.Config.transparent)
+        {
+            TransparencyLevelHint =
+            [
+                UnityHubNativeNetApp.Config.acrylic ? WindowTransparencyLevel.AcrylicBlur : WindowTransparencyLevel.Mica,
+                WindowTransparencyLevel.Blur,
+            ];
+#if Windows
+
+            Background = Brushes.Transparent;
+#endif
+        }
     }
 
     private static void ReloadEverything()
@@ -332,10 +350,71 @@ class MainWindow : Window
                             },
                         ])
                     ])
+                },
+                new TabItem
+                {
+                    Header = "Options",
+                    Content = new DockPanel
+                    {
+                        LastChildFill = false
+                    }.AddChildren
+                    ([
+                        new SettingsExpander
+                        {
+                            Header = new DockPanel
+                            {
+                                LastChildFill = false
+                            }.AddChildren
+                            ([
+                                new TextBlock
+                                {
+                                    Text = "Transparent Window",
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                }.SetDock(Dock.Left),
+                                s_transparentCheckbox = new CheckBox
+                                {
+                                    IsChecked = UnityHubNativeNetApp.Config.transparent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
+                            ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
+                        }.SetDock(Dock.Top).AddItems
+                        ([
+                            s_transparentPanel = new DockPanel
+                            {
+                                IsEnabled = UnityHubNativeNetApp.Config.transparent,
+                                LastChildFill = false,
+                            }.AddChildren
+                            ([
+                                new TextBlock
+                                {
+                                    Text = "Acrilyc",
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
+                                s_acrylicCheckbox = new CheckBox
+                                {
+                                    IsChecked = UnityHubNativeNetApp.Config.transparent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right)
+                            ])
+                        ])
+                    ])
                 }
             ])
         ])
     ]);
+
+    private static void OnAcrylicCheckboxChanged()
+    {
+        UnityHubNativeNetApp.Config.acrylic = !UnityHubNativeNetApp.Config.acrylic;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
+
+    private static void OnTransparencyCheckboxChanged()
+    {
+        UnityHubNativeNetApp.Config.transparent = !UnityHubNativeNetApp.Config.transparent;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+        s_transparentPanel.IsEnabled = UnityHubNativeNetApp.Config.transparent;
+    }
 
     private static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string? filter, CancellationToken _)
     {
