@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Diagnostics;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -13,7 +11,6 @@ internal sealed class UnityProjectView : Panel
     readonly ComboBox _unityVersionComboBox;
     readonly TextBlock _titleTextBlock;
     readonly TextBlock _pathTextBlock;
-    readonly Button _openBtn;
 
     public UnityProjectView(UnityProject unityProject) : this() => Update(unityProject);
 
@@ -31,28 +28,27 @@ internal sealed class UnityProjectView : Panel
                     Margin = new(0)
                 }.AddChildren
                 ([
-                    _openBtn = new Button
-                    {
-                        Margin = new(5, 5, 20, 5),
-                        Content = "Open"
-                    }.SetTooltip("Open the project").SetDock(Dock.Right)
-                    .OnClick(OpenProject),
                     _unityVersionComboBox = new ComboBox
                     {
                          ItemsSource = GetInstallationsEnum(),
-                         Margin = new(5, 0),
+                         Margin = new(5, 0, 0, 0),
                          MinWidth = 120,
                          VerticalAlignment = VerticalAlignment.Center,
                          WrapSelection = true
                     }.OnSelectionChanged(OnUnityVersionChanged).SetDock(Dock.Right),
-                    _pathTextBlock = new TextBlock
+                    new HyperlinkButton
                     {
-                        FontWeight = FontWeight.Thin,
-                        FontStyle = FontStyle.Italic,
-                        FontSize = 12,
-                        Margin = new(5, 0, 0, 0),
-                        VerticalAlignment = VerticalAlignment.Center,
-                    }.SetDock(Dock.Right),
+                        Margin = new(0),
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Content = _pathTextBlock = new TextBlock
+                        {
+                            FontWeight = FontWeight.Thin,
+                            FontStyle = FontStyle.Italic,
+                            FontSize = 11,
+                            ClipToBounds = false,
+                        }
+                    }.OnClick(OnPathLinkClicked).SetDock(Dock.Right),
                     _titleTextBlock = new TextBlock
                     {
                         FontWeight = FontWeight.SemiBold,
@@ -64,6 +60,11 @@ internal sealed class UnityProjectView : Panel
             }
         ]);
         ActualThemeVariantChanged += (_, _) => UpdateUnityVersionWarning();
+    }
+
+    private void OnPathLinkClicked()
+    {
+        OsUtils.OpenExplorer(unityProject.path);
     }
 
     public void OpenProject()
@@ -89,21 +90,7 @@ internal sealed class UnityProjectView : Panel
         _unityVersionComboBox.SelectedIndex = unityProject.unity.HasValue
             ? UnityHubUtils.UnityInstallations.FindIndex(u => u.version == unityProject.unity.Value.version) + 1
             : 0;
-        _openBtn.IsEnabled = unityProject.unity.HasValue;
         UpdateUnityVersionWarning();
-    }
-
-    protected override void OnGotFocus(GotFocusEventArgs e)
-    {
-        Debug.WriteLine("got focus");
-        _openBtn.RaiseEvent(new()
-        {
-            Handled = e.Handled,
-            Route = e.Route,
-            RoutedEvent = e.RoutedEvent,
-            Source = e.Source
-        });
-        e.Handled = true;
     }
 
     static IEnumerable GetInstallationsEnum()
@@ -116,24 +103,17 @@ internal sealed class UnityProjectView : Panel
     void OnUnityVersionChanged()
     {
         int ind = _unityVersionComboBox.SelectedIndex - 1;
-        if (ind == -1)
-            unityProject = new(unityProject.path, unityProject.lastModifiedDate, null);
-        else
-            unityProject = new(unityProject.path, unityProject.lastModifiedDate, UnityHubUtils.UnityInstallations[ind]);
+        unityProject = new(unityProject.path, unityProject.lastModifiedDate, ind == -1 ? null : UnityHubUtils.UnityInstallations[ind]);
         UpdateUnityVersionWarning();
     }
 
     void UpdateUnityVersionWarning()
     {
         if (unityProject is not null && unityProject.unity.HasValue)
-        {
-            _openBtn.IsEnabled = true;
-            _unityVersionComboBox.Foreground = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark ? Brushes.White : Brushes.Black;
-        }
+            _unityVersionComboBox.Foreground = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
+                ? Brushes.White
+                : Brushes.Black;
         else
-        {
-            _openBtn.IsEnabled = false;
             _unityVersionComboBox.Foreground = Brushes.Red;
-        }
     }
 }

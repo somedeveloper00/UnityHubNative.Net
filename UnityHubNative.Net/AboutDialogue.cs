@@ -14,16 +14,17 @@ sealed class AboutDialogue : Window
     {
         Content = CreateContent();
         _btn!.Focus();
-        TransparencyLevelHint =
-        [
-            WindowTransparencyLevel.AcrylicBlur,
-            WindowTransparencyLevel.Blur,
-        ];
+
+        if (UnityHubNativeNetApp.Config.transparent)
+        {
+            TransparencyLevelHint = [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur];
+#if Windows
+            Background = new SolidColorBrush(Colors.Transparent, UnityHubNativeNetApp.Config.blurIntensity);
+#endif
+        }
+
         CanResize = false;
         SizeToContent = SizeToContent.WidthAndHeight;
-#if Windows
-        Background = Brushes.Transparent;
-#endif
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         Focusable = true;
     }

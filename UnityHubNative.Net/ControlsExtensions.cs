@@ -64,7 +64,13 @@ public static class ControlsExtensions
         return button;
     }
 
-    public static Button OnClick(this Button button, Action callback)
+    public static T OnClick<T>(this T button, Action callback) where T : Button
+    {
+        button.Click += (obj, args) => callback();
+        return button;
+    }
+
+    public static NativeMenuItem OnClick(this NativeMenuItem button, Action callback)
     {
         button.Click += (obj, args) => callback();
         return button;
@@ -121,6 +127,13 @@ public static class ControlsExtensions
     {
         for (int i = 0; i < menuItems.Length; i++)
             menu.Items.Add(menuItems[i]);
+        return menu;
+    }
+
+    public static T1 AddItems<T1, T2>(this T1 menu, T2[] items) where T1 : NativeMenu where T2 : NativeMenuItemBase
+    {
+        for (int i = 0; i < items.Length; i++)
+            menu.Items.Add(items[i]);
         return menu;
     }
 

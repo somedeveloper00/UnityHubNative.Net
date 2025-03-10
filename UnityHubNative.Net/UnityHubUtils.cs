@@ -21,7 +21,7 @@ static class UnityHubUtils
 #endif
     ];
 
-    static readonly string s_executableRelativePath =
+    public const string s_UnityExecutableRelativePath =
 #if Windows
         "Editor\\Unity.exe"
 #elif Linux
@@ -103,11 +103,11 @@ static class UnityHubUtils
                 continue;
             foreach (var dir in Directory.GetDirectories(path))
             {
-                var executable = Path.Combine(dir, s_executableRelativePath);
+                var executable = Path.Combine(dir, s_UnityExecutableRelativePath);
                 if (File.Exists(executable))
                 {
                     var version = ExtractVersionFromDirName(Path.GetFileName(dir));
-                    UnityInstallations.Add(new UnityInstallation(executable, version));
+                    UnityInstallations.Add(new UnityInstallation(dir, version));
                 }
             }
         }
@@ -204,10 +204,25 @@ static class UnityHubUtils
     }
 }
 
-readonly struct UnityInstallation(string path, string version) : IComparable<UnityInstallation>
+readonly struct UnityInstallation(string rootPath, string version) : IComparable<UnityInstallation>
 {
-    public readonly string path = path;
+    public readonly string path = Path.Combine(rootPath, UnityHubUtils.s_UnityExecutableRelativePath);
     public readonly string version = version;
+    public readonly string templateRootPath = Path.Combine(rootPath, "Editor", "Data", "Resources", "PackageManager", "ProjectTemplates");
+    const string TemplatePrefix = "com.unity.template";
+
+    public string[] GetTemplatePaths()
+    {
+        var result = new List<string>();
+        foreach (var file in Directory.GetFiles(templateRootPath))
+        {
+            if (Directory.Exists(file))
+                continue;
+            if (Path.GetFileName(file).StartsWith(TemplatePrefix))
+                result.Add(file);
+        }
+        return result.ToArray();
+    }
 
     public override string ToString() => $"{{\"{path}\", \"{version}\"}}";
     public int CompareTo(UnityInstallation other) => path.CompareTo(other.path);

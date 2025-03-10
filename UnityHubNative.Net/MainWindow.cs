@@ -13,29 +13,26 @@ namespace UnityHubNative.Net;
 
 class MainWindow : Window
 {
-    private const string InstallUnityUrl = "https://unity.com/releases/editor/archive";
+    const string InstallUnityUrl = "https://unity.com/releases/editor/archive";
 
-    public static MainWindow Instance { get; private set; }
-    private static ListBox s_unityInstallationsParent;
+    public static MainWindow Instance { get; set; }
+    static ListBox s_unityInstallationsParent;
 
-    private static ListBox s_unityInstalltionSearchPathsParent;
-    private static Button s_unityInstallationSearchRemoveBtn;
+    static ListBox s_unityInstalltionSearchPathsParent;
+    static Button s_unityInstallationSearchRemoveBtn;
 
-    private static SubmitableListBox s_unityProjectsParent;
-    private static Button s_revealBtn;
-    private static Button s_removeFromListBtn;
-    private static Button s_openWithBtn;
-    private static AutoCompleteBox s_projectSearchBoxAutoComplete;
+    static SubmitableListBox s_unityProjectsParent;
+    static Button s_revealBtn;
+    static Button s_removeFromListBtn;
+    static Button s_openWithBtn;
+    static AutoCompleteBox s_projectSearchBoxAutoComplete;
 
-    private static MenuItem s_removeFromListMenuItem;
-    private static MenuItem s_revealInFileExplorerMenuItem;
-    private static MenuItem s_openInDifferentVersionMenuItem;
+    static MenuItem s_removeFromListMenuItem;
+    static MenuItem s_revealInFileExplorerMenuItem;
+    static MenuItem s_openInDifferentVersionMenuItem;
 
-    private static CheckBox s_acrylicCheckbox;
-    private static CheckBox s_transparentCheckbox;
-    private static DockPanel s_transparentPanel;
-    private static Slider s_backgroundBlurIntensitySlider;
-    private static CheckBox s_closeAfterOpenProjectCheckbox;
+    static DockPanel s_transparentPanel;
+    static Slider s_backgroundBlurIntensitySlider;
 
     public MainWindow(object data)
     {
@@ -109,7 +106,7 @@ class MainWindow : Window
         }
     }
 
-    private static void ReloadEverything()
+    static void ReloadEverything()
     {
         UnityHubUtils.LoadAll();
         UpdateUnityVersionViews();
@@ -117,7 +114,7 @@ class MainWindow : Window
         UpdateUnityProjectViews();
     }
 
-    private static Control CreateContent() => new DockPanel
+    static Control CreateContent() => new DockPanel
     {
         LastChildFill = true,
         HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -378,7 +375,7 @@ class MainWindow : Window
                                     Text = "Transparent Window",
                                     VerticalAlignment = VerticalAlignment.Center,
                                 }.SetDock(Dock.Left),
-                                s_transparentCheckbox = new CheckBox
+                                new CheckBox
                                 {
                                     IsChecked = UnityHubNativeNetApp.Config.transparent,
                                     VerticalAlignment = VerticalAlignment.Center,
@@ -404,7 +401,7 @@ class MainWindow : Window
                                             Text = "Acrilyc",
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
-                                        s_acrylicCheckbox = new CheckBox
+                                        new CheckBox
                                         {
                                             IsChecked = UnityHubNativeNetApp.Config.acrylic,
                                             VerticalAlignment = VerticalAlignment.Center,
@@ -466,7 +463,7 @@ class MainWindow : Window
                                         Text = "Close after opening a project",
                                         VerticalAlignment = VerticalAlignment.Center,
                                     }.SetDock(Dock.Left),
-                                    s_closeAfterOpenProjectCheckbox = new CheckBox
+                                    new CheckBox
                                     {
                                         IsChecked = UnityHubNativeNetApp.Config.closeAfterProjectOpen,
                                         VerticalAlignment = VerticalAlignment.Center,
@@ -480,33 +477,33 @@ class MainWindow : Window
         ])
     ]);
 
-    private static void OnCloseAfterOpenProjectCheckboxChanged()
+    static void OnCloseAfterOpenProjectCheckboxChanged()
     {
         UnityHubNativeNetApp.Config.closeAfterProjectOpen = !UnityHubNativeNetApp.Config.closeAfterProjectOpen;
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
     }
 
-    private static void OnAcrylicIntensitySliderValueChanged()
+    static void OnAcrylicIntensitySliderValueChanged()
     {
         UnityHubNativeNetApp.Config.blurIntensity = (float)s_backgroundBlurIntensitySlider.Value;
         Instance.SetupBackground();
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
     }
 
-    private static void OnAcrylicCheckboxChanged()
+    static void OnAcrylicCheckboxChanged()
     {
         UnityHubNativeNetApp.Config.acrylic = !UnityHubNativeNetApp.Config.acrylic;
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
     }
 
-    private static void OnTransparencyCheckboxChanged()
+    static void OnTransparencyCheckboxChanged()
     {
         UnityHubNativeNetApp.Config.transparent = !UnityHubNativeNetApp.Config.transparent;
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
         s_transparentPanel.IsEnabled = UnityHubNativeNetApp.Config.transparent;
     }
 
-    private static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string? filter, CancellationToken _)
+    static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string? filter, CancellationToken _)
     {
         if (filter == null)
         {
@@ -526,14 +523,14 @@ class MainWindow : Window
         }
     }
 
-    private static void OnUnityProjectListSubmitted()
+    static void OnUnityProjectListSubmitted()
     {
         if (!IsAnyProjectSelected())
             return;
         ((UnityProjectView)s_unityProjectsParent.Items[GetUnityProjectSelectedIndex()]!).OpenProject();
     }
 
-    private static void RemoveSelectedUnitySearchPath(Button button, RoutedEventArgs args)
+    static void RemoveSelectedUnitySearchPath(Button button, RoutedEventArgs args)
     {
         var index = GetSelectedUnityInstallationSearchPathsIndex();
         if (index < 0 || index >= UnityHubUtils.UnityInstallationSearchPaths.Count)
@@ -548,7 +545,7 @@ class MainWindow : Window
         s_unityInstallationSearchRemoveBtn.IsEnabled = false;
     }
 
-    private static void UnityInstallationSearchPathSelectedIndexChanged()
+    static void UnityInstallationSearchPathSelectedIndexChanged()
     {
         var index = GetSelectedUnityInstallationSearchPathsIndex();
         if (index < 0 || index >= UnityHubUtils.UnityInstallationSearchPaths.Count)
@@ -557,7 +554,7 @@ class MainWindow : Window
             s_unityInstallationSearchRemoveBtn.IsEnabled = true;
     }
 
-    private static void UnityProjectSelectedIndexChanged()
+    static void UnityProjectSelectedIndexChanged()
     {
         var index = GetUnityProjectSelectedIndex();
         Debug.WriteLine($"selection changed to {index}");
@@ -570,7 +567,7 @@ class MainWindow : Window
         s_removeFromListMenuItem.IsEnabled = s_revealInFileExplorerMenuItem.IsEnabled = s_openInDifferentVersionMenuItem.IsEnabled = isAnySelected;
     }
 
-    private static async void AddNewUnitySearchPath()
+    static async void AddNewUnitySearchPath()
     {
         try
         {
@@ -606,17 +603,17 @@ class MainWindow : Window
         }
     }
 
-    private static int GetSelectedUnityInstallationSearchPathsIndex() => s_unityInstalltionSearchPathsParent.SelectedIndex;
+    static int GetSelectedUnityInstallationSearchPathsIndex() => s_unityInstalltionSearchPathsParent.SelectedIndex;
 
-    private static int GetUnityProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex;
+    static int GetUnityProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex;
 
-    private static bool IsAnyProjectSelected()
+    static bool IsAnyProjectSelected()
     {
         var ind = GetUnityProjectSelectedIndex();
         return ind >= 0 && ind < UnityHubUtils.UnityProjects.Count;
     }
 
-    private static async void OnAddExistingProjectClicked()
+    static async void OnAddExistingProjectClicked()
     {
         try
         {
@@ -658,15 +655,15 @@ class MainWindow : Window
         }
     }
 
-    private static void OnOpenWithClicked()
+    static void OnOpenWithClicked()
     {
         var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
         dialogue.ShowDialog(Instance);
     }
 
-    private static void OnCreateNewProjectClicked() => ShowTbiDialogue();
+    static void OnCreateNewProjectClicked() => new CreateNewProjectDialogue().ShowDialog(Instance);
 
-    private static void OnRemoveProjectFromListClicked()
+    static void OnRemoveProjectFromListClicked()
     {
         UnityHubUtils.UnityProjects.RemoveAt(GetUnityProjectSelectedIndex());
         UnityHubUtils.SaveUnityProjects();
@@ -674,11 +671,11 @@ class MainWindow : Window
         UpdateUnityProjectViews();
     }
 
-    private static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
+    static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
 
-    private static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(Instance);
+    static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(Instance);
 
-    private static void UpdateUnityVersionViews()
+    static void UpdateUnityVersionViews()
     {
         SyncListBoxWithView<UnityInstallation, UnityInstallationView>(s_unityInstallationsParent, UnityHubUtils.UnityInstallations);
 
@@ -686,7 +683,7 @@ class MainWindow : Window
             ((UnityInstallationView)s_unityInstallationsParent.Items[i]!).Update(UnityHubUtils.UnityInstallations[i]);
     }
 
-    private static void UpdateUnitySearchPathViews()
+    static void UpdateUnitySearchPathViews()
     {
         SyncListBoxWithView<string, UnityInstallationSearchPathView>(s_unityInstalltionSearchPathsParent, UnityHubUtils.UnityInstallationSearchPaths);
 
@@ -694,7 +691,7 @@ class MainWindow : Window
             ((UnityInstallationSearchPathView)s_unityInstalltionSearchPathsParent.Items[i]!).Update(UnityHubUtils.UnityInstallationSearchPaths[i]);
     }
 
-    private static void UpdateUnityProjectViews()
+    static void UpdateUnityProjectViews()
     {
         SyncListBoxWithView<UnityProject, UnityProjectView>(s_unityProjectsParent, UnityHubUtils.UnityProjects);
 
@@ -702,7 +699,7 @@ class MainWindow : Window
             ((UnityProjectView)s_unityProjectsParent.Items[i]!).Update(UnityHubUtils.UnityProjects[i]);
     }
 
-    private static void SyncListBoxWithView<TItem, TView>(ListBox parent, List<TItem> items) where TView : new()
+    static void SyncListBoxWithView<TItem, TView>(ListBox parent, List<TItem> items) where TView : new()
     {
         // update
         for (int i = 0; i < items.Count; i++)
@@ -719,7 +716,7 @@ class MainWindow : Window
             parent.Items.RemoveAt(i);
     }
 
-    private static void ShowTbiDialogue()
+    static void ShowTbiDialogue()
     {
         _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(Instance);
     }
