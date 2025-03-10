@@ -15,7 +15,7 @@ class MainWindow : Window
 {
     private const string InstallUnityUrl = "https://unity.com/releases/editor/archive";
 
-    private static MainWindow s_instance;
+    public static MainWindow Instance { get; private set; }
     private static ListBox s_unityInstallationsParent;
 
     private static ListBox s_unityInstalltionSearchPathsParent;
@@ -30,14 +30,16 @@ class MainWindow : Window
     private static MenuItem s_removeFromListMenuItem;
     private static MenuItem s_revealInFileExplorerMenuItem;
     private static MenuItem s_openInDifferentVersionMenuItem;
-    private static CheckBox s_transparentCheckbox;
+
     private static CheckBox s_acrylicCheckbox;
+    private static CheckBox s_transparentCheckbox;
     private static DockPanel s_transparentPanel;
     private static Slider s_backgroundBlurIntensitySlider;
+    private static CheckBox s_closeAfterOpenProjectCheckbox;
 
     public MainWindow(object data)
     {
-        s_instance = this;
+        Instance = this;
         DataContext = data;
         Title = "UnityHubNative.Net";
         Content = CreateContent();
@@ -179,7 +181,7 @@ class MainWindow : Window
                     Header = "_Close Window",
                     HotKey = new(Key.W, KeyModifiers.Control),
                     InputGesture = new(Key.W, KeyModifiers.Control)
-                }.OnClick(static () => s_instance.Close()),
+                }.OnClick(static () => Instance.Close()),
                 new MenuItem
                 {
                     Header = "_About UnityHubNative.Net",
@@ -436,6 +438,41 @@ class MainWindow : Window
                                     }.OnValueChanged(OnAcrylicIntensitySliderValueChanged).SetDock(Dock.Right)
                                 ]).SetDock(Dock.Top)
                             }
+                        ]),
+                        new SettingsExpander
+                        {
+                            Header = new DockPanel
+                            {
+                                LastChildFill = false
+                            }.AddChildren
+                            ([
+                                new TextBlock
+                                {
+                                    Text = "Behaviour",
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                }.SetDock(Dock.Left)
+                            ]),
+                        }.SetDock(Dock.Top).AddItems
+                        ([
+                            new SettingsExpanderItem
+                            {
+                                Content = new DockPanel
+                                {
+                                    LastChildFill = false
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Close after opening a project",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.SetDock(Dock.Left),
+                                    s_closeAfterOpenProjectCheckbox = new CheckBox
+                                    {
+                                        IsChecked = UnityHubNativeNetApp.Config.closeAfterProjectOpen,
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.OnCheckChanged(OnCloseAfterOpenProjectCheckboxChanged).SetDock(Dock.Right)
+                                ])
+                            }.SetTooltip("If checked, the app will close after opening a project")
                         ])
                     ])
                 }
@@ -443,10 +480,16 @@ class MainWindow : Window
         ])
     ]);
 
+    private static void OnCloseAfterOpenProjectCheckboxChanged()
+    {
+        UnityHubNativeNetApp.Config.closeAfterProjectOpen = !UnityHubNativeNetApp.Config.closeAfterProjectOpen;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
+
     private static void OnAcrylicIntensitySliderValueChanged()
     {
         UnityHubNativeNetApp.Config.blurIntensity = (float)s_backgroundBlurIntensitySlider.Value;
-        s_instance.SetupBackground();
+        Instance.SetupBackground();
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
     }
 
@@ -487,8 +530,7 @@ class MainWindow : Window
     {
         if (!IsAnyProjectSelected())
             return;
-        UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].OpenProject();
-
+        ((UnityProjectView)s_unityProjectsParent.Items[GetUnityProjectSelectedIndex()]!).OpenProject();
     }
 
     private static void RemoveSelectedUnitySearchPath(Button button, RoutedEventArgs args)
@@ -532,7 +574,7 @@ class MainWindow : Window
     {
         try
         {
-            var paths = await s_instance.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            var paths = await Instance.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = true,
                 Title = "Pick Folder to search for Unity Installations"
@@ -560,7 +602,7 @@ class MainWindow : Window
         catch (Exception ex)
         {
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
-            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(s_instance);
+            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
         }
     }
 
@@ -578,7 +620,7 @@ class MainWindow : Window
     {
         try
         {
-            var paths = await s_instance.StorageProvider.OpenFolderPickerAsync(new()
+            var paths = await Instance.StorageProvider.OpenFolderPickerAsync(new()
             {
                 AllowMultiple = true,
                 Title = "Select the folder(s) containing the Unity Project"
@@ -592,7 +634,7 @@ class MainWindow : Window
                     continue;
                 if (UnityHubUtils.UnityProjects.Any(p => p.path == folder))
                 {
-                    _ = MessageBoxManager.GetMessageBoxStandard($"Project \"{folder}\" has already been added.", "Cannot add project", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info).ShowWindowDialogAsync(s_instance);
+                    _ = MessageBoxManager.GetMessageBoxStandard($"Project \"{folder}\" has already been added.", "Cannot add project", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info).ShowWindowDialogAsync(Instance);
                     continue;
                 }
                 bool dirty = false;
@@ -611,7 +653,7 @@ class MainWindow : Window
         }
         catch (Exception ex)
         {
-            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(s_instance);
+            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
         }
     }
@@ -619,7 +661,7 @@ class MainWindow : Window
     private static void OnOpenWithClicked()
     {
         var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
-        dialogue.ShowDialog(s_instance);
+        dialogue.ShowDialog(Instance);
     }
 
     private static void OnCreateNewProjectClicked() => ShowTbiDialogue();
@@ -634,7 +676,7 @@ class MainWindow : Window
 
     private static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
 
-    private static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(s_instance);
+    private static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(Instance);
 
     private static void UpdateUnityVersionViews()
     {
@@ -679,7 +721,7 @@ class MainWindow : Window
 
     private static void ShowTbiDialogue()
     {
-        _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(s_instance);
+        _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(Instance);
     }
 }
 

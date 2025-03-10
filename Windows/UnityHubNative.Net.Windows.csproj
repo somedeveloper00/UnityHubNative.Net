@@ -5,7 +5,6 @@
         <TargetFramework>net9.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <PublishAot>true</PublishAot>
-        <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>True</PublishTrimmed>
         <AssemblyName>UnityHubNative.Net</AssemblyName>
         <DefineConstants>$(DefineConstants);OS_WINDOWS</DefineConstants>

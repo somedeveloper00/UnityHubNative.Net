@@ -271,6 +271,11 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
         {
             MessageBoxManager.GetMessageBoxStandard("Cannot Open Project", $"Cannot open project at {path} because an error occurred: {ex.Message}", ButtonEnum.Ok, Icon.Error).ShowAsync();
         }
+
+        if (UnityHubNativeNetApp.Config.closeAfterProjectOpen)
+        {
+            MainWindow.Instance.Close();
+        }
     }
 
 }
