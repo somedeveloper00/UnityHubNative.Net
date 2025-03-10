@@ -29,6 +29,7 @@ sealed class CreateNewProjectDialogue : Window
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         CanResize = false;
         SystemDecorations = SystemDecorations.BorderOnly;
+        ExtendClientAreaToDecorationsHint = true;
 
         if (UnityHubNativeNetApp.Config.transparent)
         {
@@ -36,7 +37,6 @@ sealed class CreateNewProjectDialogue : Window
 #if Windows
             Background = new SolidColorBrush(Colors.Transparent, UnityHubNativeNetApp.Config.blurIntensity);
 #endif
-            ExtendClientAreaToDecorationsHint = true;
         }
     }
 
