@@ -1,8 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
-using UnityHubNative.Net;
 
 namespace UnityHubNative.Net;
 
@@ -13,7 +13,12 @@ sealed class AboutDialogue : Window
     public AboutDialogue()
     {
         Content = CreateContent();
-        _btn!.Focus();
+
+        SizeToContent = SizeToContent.WidthAndHeight;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        CanResize = false;
+        SystemDecorations = SystemDecorations.BorderOnly;
+        ExtendClientAreaToDecorationsHint = true;
 
         if (UnityHubNativeNetApp.Config.transparent)
         {
@@ -22,18 +27,19 @@ sealed class AboutDialogue : Window
             Background = new SolidColorBrush(Colors.Transparent, UnityHubNativeNetApp.Config.blurIntensity);
 #endif
         }
+    }
 
-        CanResize = false;
-        SizeToContent = SizeToContent.WidthAndHeight;
-        WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        Focusable = true;
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        _btn.Focus();
     }
 
     private object? CreateContent()
     {
         return new DockPanel
         {
-            Margin = new(5)
+            Margin = WindowDecorationMargin + new Thickness(5)
         }.AddChildren
         ([
             new TextBlock

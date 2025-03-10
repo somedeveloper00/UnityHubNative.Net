@@ -25,6 +25,7 @@ sealed class CreateNewProjectDialogue : Window
         Content = CreateContent();
         UpdateVersionSelectionViews();
         UpdateTemplateViews();
+
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         CanResize = false;
@@ -92,6 +93,7 @@ sealed class CreateNewProjectDialogue : Window
                 new Button
                 {
                     Content = "Choose",
+                    Margin = new(2)
                 }.OnClick(OnChooseLocationClicked).SetDock(Dock.Right),
                 _pathTextBox = new TextBox
                 {
@@ -131,6 +133,7 @@ sealed class CreateNewProjectDialogue : Window
                 {
                     Content = "Create",
                     IsEnabled = false,
+                    Margin = new(2),
                     VerticalAlignment = VerticalAlignment.Center,
                 }.OnClick(OnCreateClicked).SetTooltip("Create the Unity Project with the specified attributes").SetDock(Dock.Right),
                 new Button
@@ -138,6 +141,7 @@ sealed class CreateNewProjectDialogue : Window
                     Content = "Cancel",
                     HotKey = new(Key.Escape),
                     VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new(2),
                 }.OnClick(OnCancelClicked).SetTooltip("Cancel the creation of a new Unity Project").SetDock(Dock.Right),
             ]).SetDock(Dock.Bottom),
             _templatesParent = new ListBox

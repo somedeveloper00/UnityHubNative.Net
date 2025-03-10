@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -24,27 +25,40 @@ sealed class OpenWithDialogue : Window
     {
         _unityProject = unityProject;
         Title = "Open With Specific Editor";
-        TransparencyLevelHint =
-        [
-            WindowTransparencyLevel.AcrylicBlur,
-            WindowTransparencyLevel.Blur,
-        ];
         Content = CreateContent();
-        _platformOptionsComboBox!.SelectedIndex = 0;
-        _unityVersionListBox!.Focus();
-        CanResize = false;
+
         SizeToContent = SizeToContent.WidthAndHeight;
-#if Windows
-        Background = Brushes.Transparent;
-#endif
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        CanResize = false;
+        SystemDecorations = SystemDecorations.BorderOnly;
+        ExtendClientAreaToDecorationsHint = true;
+
+        if (UnityHubNativeNetApp.Config.transparent)
+        {
+            TransparencyLevelHint =
+            [
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Blur,
+            ];
+#if Windows
+            Background = new SolidColorBrush(Colors.Transparent, UnityHubNativeNetApp.Config.blurIntensity);
+#endif
+        }
+    }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        _platformOptionsComboBox.SelectedIndex = 0;
+        _unityVersionListBox.SelectedIndex = 0;
+        _unityVersionListBox.ContainerFromIndex(0)!.Focus();
     }
 
     private Control CreateContent() => new Border
     {
         Child = new DockPanel
         {
-            Margin = new(5),
+            Margin = WindowDecorationMargin + new Thickness(5),
             Background = Brushes.Transparent,
         }.AddChildren
         ([
@@ -83,6 +97,7 @@ sealed class OpenWithDialogue : Window
                 WrapSelection = true,
                 AutoScrollToSelectedItem = true,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                IsTextSearchEnabled = true,
             }.AddItems(GetPlatformItems()).SetDock(Dock.Top),
             new Button
             {
