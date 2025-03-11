@@ -67,7 +67,7 @@ internal sealed class UnityProjectView : Panel
         OsUtils.OpenExplorer(unityProject.path);
     }
 
-    public void OpenProject()
+    public async void OpenProject()
     {
         if (unityProject is null)
             return;
@@ -75,10 +75,18 @@ internal sealed class UnityProjectView : Panel
         {
             _unityVersionComboBox.Focus();
             _unityVersionComboBox.IsDropDownOpen = true;
+            _unityVersionComboBox.DropDownClosed += DropDownClosed;
             return;
         }
         unityProject.OpenProject();
+
+        void DropDownClosed(object? sender, EventArgs e)
+        {
+            _unityVersionComboBox.DropDownClosed -= DropDownClosed;
+            OpenProject();
+        }
     }
+
 
     public override string ToString() => unityProject?.name ?? string.Empty;
 
