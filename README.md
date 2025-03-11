@@ -6,7 +6,7 @@
 
 It launches many times faster, uses far less memory and CPU, and is a fraction of the total size of the official Unity Hub.
 
-<img width="912" alt="image" src=".github/res/screenshot.png">
+<img width="512" alt="image" src=".github/res/screenshot.png">
 
 ## Features 🚀
 - Open projects by from the list, or by using the search bar
