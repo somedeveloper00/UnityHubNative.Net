@@ -23,6 +23,12 @@ class SubmitableListBox : ListBox
 
     protected override Type StyleKeyOverride => typeof(ListBox);
 
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        OnSubmit?.Invoke();
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (!e.Handled && submitGestures.Any(g => g.Matches(e)))
