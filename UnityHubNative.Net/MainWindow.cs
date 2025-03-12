@@ -86,32 +86,86 @@ class MainWindow : Window
             s_unityProjectsParent.ContainerFromIndex(0)!.Focus();
     }
 
-    void SetupBackground()
-    {
-        if (UnityHubNativeNetApp.Config.transparent)
-        {
-            TransparencyLevelHint =
-            [
-                UnityHubNativeNetApp.Config.acrylic ? WindowTransparencyLevel.AcrylicBlur : WindowTransparencyLevel.Mica,
-                WindowTransparencyLevel.Blur,
-            ];
-#if Windows
-
-            Background = UnityHubNativeNetApp.Config.acrylic
-                ? new SolidColorBrush(
-                    ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark ? Colors.Black : Colors.White,
-                    1 - UnityHubNativeNetApp.Config.blurIntensity)
-                : Brushes.Transparent;
-#endif
-        }
-    }
-
-    static void ReloadEverything()
+    public static void ReloadEverything()
     {
         UnityHubUtils.LoadAll();
         UpdateUnityVersionViews();
         UpdateUnitySearchPathViews();
         UpdateUnityProjectViews();
+    }
+
+    public static void OnOpenWithClicked()
+    {
+        var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
+        dialogue.ShowDialog(Instance);
+    }
+
+    public static void OnRemoveProjectFromListClicked()
+    {
+        UnityHubUtils.UnityProjects.RemoveAt(GetUnityProjectSelectedIndex());
+        UnityHubUtils.SaveUnityProjects();
+        UnityHubUtils.LoadUnityProjects();
+        UpdateUnityProjectViews();
+    }
+
+    public static void UpdateUnityVersionViews()
+    {
+        SyncListBoxWithView<UnityInstallation, UnityInstallationView>(s_unityInstallationsParent, UnityHubUtils.UnityInstallations);
+
+        for (int i = 0; i < UnityHubUtils.UnityInstallations.Count; i++)
+            ((UnityInstallationView)s_unityInstallationsParent.Items[i]!).Update(UnityHubUtils.UnityInstallations[i]);
+    }
+
+    public static void UpdateUnitySearchPathViews()
+    {
+        SyncListBoxWithView<string, UnityInstallationSearchPathView>(s_unityInstalltionSearchPathsParent, UnityHubUtils.UnityInstallationSearchPaths);
+
+        for (int i = 0; i < UnityHubUtils.UnityInstallationSearchPaths.Count; i++)
+            ((UnityInstallationSearchPathView)s_unityInstalltionSearchPathsParent.Items[i]!).Update(UnityHubUtils.UnityInstallationSearchPaths[i]);
+    }
+
+    public static void UpdateUnityProjectViews()
+    {
+        SyncListBoxWithView<UnityProject, UnityProjectView>(s_unityProjectsParent, UnityHubUtils.UnityProjects);
+
+        for (int i = 0; i < UnityHubUtils.UnityProjects.Count; i++)
+            ((UnityProjectView)s_unityProjectsParent.Items[i]!).Update(UnityHubUtils.UnityProjects[i]);
+    }
+
+    public static void MoveUnityProjectUp(UnityProject unityProject)
+    {
+        if (unityProject is null)
+            return;
+        var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
+        if (ind == -1)
+            return;
+        if (ind == UnityHubUtils.UnityProjects.Count - 1)
+            return;
+        UnityHubUtils.UnityProjects.RemoveAt(ind);
+        UnityHubUtils.UnityProjects.Insert(ind + 1, unityProject);
+        UnityHubUtils.SaveUnityProjects();
+        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[ind + 1]) = (s_unityProjectsParent.Items[ind + 1], s_unityProjectsParent.Items[ind]);
+        s_unityProjectsParent.SelectedIndex = ind + 1;
+        ((UnityProjectView)s_unityProjectsParent.Items[ind]).Update(UnityHubUtils.UnityProjects[ind]);
+        ((UnityProjectView)s_unityProjectsParent.Items[ind + 1]).Update(UnityHubUtils.UnityProjects[ind + 1]);
+    }
+
+    public static void MoveUnityProjectDown(UnityProject unityProject)
+    {
+        if (unityProject is null)
+            return;
+        var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
+        if (ind == -1)
+            return;
+        if (ind == 0)
+            return;
+        UnityHubUtils.UnityProjects.RemoveAt(ind);
+        UnityHubUtils.UnityProjects.Insert(ind - 1, unityProject);
+        UnityHubUtils.SaveUnityProjects();
+        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[ind - 1]) = (s_unityProjectsParent.Items[ind - 1], s_unityProjectsParent.Items[ind]);
+        s_unityProjectsParent.SelectedIndex = ind - 1;
+        ((UnityProjectView)s_unityProjectsParent.Items[ind]).Update(UnityHubUtils.UnityProjects[ind]);
+        ((UnityProjectView)s_unityProjectsParent.Items[ind - 1]).Update(UnityHubUtils.UnityProjects[ind - 1]);
     }
 
     static Control CreateContent() => new DockPanel
@@ -655,49 +709,11 @@ class MainWindow : Window
         }
     }
 
-    static void OnOpenWithClicked()
-    {
-        var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
-        dialogue.ShowDialog(Instance);
-    }
-
     static void OnCreateNewProjectClicked() => new CreateNewProjectDialogue().ShowDialog(Instance);
-
-    static void OnRemoveProjectFromListClicked()
-    {
-        UnityHubUtils.UnityProjects.RemoveAt(GetUnityProjectSelectedIndex());
-        UnityHubUtils.SaveUnityProjects();
-        UnityHubUtils.LoadUnityProjects();
-        UpdateUnityProjectViews();
-    }
 
     static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
 
     static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(Instance);
-
-    static void UpdateUnityVersionViews()
-    {
-        SyncListBoxWithView<UnityInstallation, UnityInstallationView>(s_unityInstallationsParent, UnityHubUtils.UnityInstallations);
-
-        for (int i = 0; i < UnityHubUtils.UnityInstallations.Count; i++)
-            ((UnityInstallationView)s_unityInstallationsParent.Items[i]!).Update(UnityHubUtils.UnityInstallations[i]);
-    }
-
-    static void UpdateUnitySearchPathViews()
-    {
-        SyncListBoxWithView<string, UnityInstallationSearchPathView>(s_unityInstalltionSearchPathsParent, UnityHubUtils.UnityInstallationSearchPaths);
-
-        for (int i = 0; i < UnityHubUtils.UnityInstallationSearchPaths.Count; i++)
-            ((UnityInstallationSearchPathView)s_unityInstalltionSearchPathsParent.Items[i]!).Update(UnityHubUtils.UnityInstallationSearchPaths[i]);
-    }
-
-    static void UpdateUnityProjectViews()
-    {
-        SyncListBoxWithView<UnityProject, UnityProjectView>(s_unityProjectsParent, UnityHubUtils.UnityProjects);
-
-        for (int i = 0; i < UnityHubUtils.UnityProjects.Count; i++)
-            ((UnityProjectView)s_unityProjectsParent.Items[i]!).Update(UnityHubUtils.UnityProjects[i]);
-    }
 
     static void SyncListBoxWithView<TItem, TView>(ListBox parent, List<TItem> items) where TView : new()
     {
@@ -719,6 +735,26 @@ class MainWindow : Window
     static void ShowTbiDialogue()
     {
         _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(Instance);
+    }
+
+    void SetupBackground()
+    {
+        if (UnityHubNativeNetApp.Config.transparent)
+        {
+            TransparencyLevelHint =
+            [
+                UnityHubNativeNetApp.Config.acrylic ? WindowTransparencyLevel.AcrylicBlur : WindowTransparencyLevel.Mica,
+                WindowTransparencyLevel.Blur,
+            ];
+#if Windows
+
+            Background = UnityHubNativeNetApp.Config.acrylic
+                ? new SolidColorBrush(
+                    ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark ? Colors.Black : Colors.White,
+                    1 - UnityHubNativeNetApp.Config.blurIntensity)
+                : Brushes.Transparent;
+#endif
+        }
     }
 }
 

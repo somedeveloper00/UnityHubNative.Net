@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using FluentAvalonia.UI.Controls;
 
 namespace UnityHubNative.Net;
 
@@ -110,6 +111,23 @@ public static class ControlsExtensions
         return menuItem;
     }
 
+    public static MenuFlyoutItem OnClick(this MenuFlyoutItem menuItem, params Action[] callbacks)
+    {
+        for (int i = 0; i < callbacks.Length; i++)
+        {
+            int index = 0;
+            menuItem.Click += (obj, args) => callbacks[index]();
+        }
+
+        return menuItem;
+    }
+
+    public static MenuFlyoutItem OnClick(this MenuFlyoutItem menuItem, Action callback)
+    {
+        menuItem.Click += (obj, args) => callback();
+        return menuItem;
+    }
+
     public static T AddChildren<T>(this T control, params Control[] children) where T : Panel
     {
         control.Children.AddRange(children);
@@ -124,6 +142,13 @@ public static class ControlsExtensions
     }
 
     public static MenuItem AddItems(this MenuItem menu, params MenuItem[] menuItems)
+    {
+        for (int i = 0; i < menuItems.Length; i++)
+            menu.Items.Add(menuItems[i]);
+        return menu;
+    }
+
+    public static MenuFlyout AddItems(this MenuFlyout menu, params MenuItem[] menuItems)
     {
         for (int i = 0; i < menuItems.Length; i++)
             menu.Items.Add(menuItems[i]);
@@ -203,5 +228,12 @@ public static class ControlsExtensions
     {
         control.SizeChanged += (_, e) => action();
         return control;
+    }
+
+    public static T OnOpening<T>(this T menu, Action<object, T> action) where T : MenuFlyout
+    {
+        menu.Opened += (src, args) => action?.Invoke((object)args, (T)src);
+        menu.Opening += (src, args) => action?.Invoke((object)args, (T)src);
+        return menu;
     }
 }

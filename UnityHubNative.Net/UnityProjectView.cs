@@ -2,12 +2,15 @@ using System.Collections;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using FluentAvalonia.UI.Controls;
 
 namespace UnityHubNative.Net;
 
 internal sealed class UnityProjectView : Panel
 {
     public UnityProject unityProject;
+    private MenuItem _moveUpMenuItem;
+    private MenuItem _moveDownMenuItem;
     readonly ComboBox _unityVersionComboBox;
     readonly TextBlock _titleTextBlock;
     readonly TextBlock _pathTextBlock;
@@ -22,6 +25,32 @@ internal sealed class UnityProjectView : Panel
         ([
             new Border
             {
+                Background = Brushes.Transparent,
+                ContextFlyout = new MenuFlyout
+                {
+                }.AddItems
+                ([
+                    new MenuItem
+                    {
+                        Header = "Open"
+                    }.OnClick(OpenProject),
+                    new MenuItem
+                    {
+                        Header = "Open With",
+                    }.OnClick(MainWindow.OnOpenWithClicked),
+                    new MenuItem
+                    {
+                        Header = "Remove From List",
+                    }.OnClick(MainWindow.OnRemoveProjectFromListClicked),
+                    _moveUpMenuItem = new MenuItem
+                    {
+                        Header = "Move Up In List",
+                    }.OnClick(OnMoveUpClicked),
+                    _moveDownMenuItem = new MenuItem
+                    {
+                        Header = "Move Down In List",
+                    }.OnClick(OnMoveDownClicked),
+                ]),
                 ClipToBounds = false,
                 Child = new DockPanel
                 {
@@ -62,6 +91,10 @@ internal sealed class UnityProjectView : Panel
         ActualThemeVariantChanged += (_, _) => UpdateUnityVersionWarning();
     }
 
+    private void OnMoveDownClicked() => MainWindow.MoveUnityProjectUp(unityProject);
+
+    private void OnMoveUpClicked() => MainWindow.MoveUnityProjectDown(unityProject);
+
     private void OnPathLinkClicked()
     {
         OsUtils.OpenExplorer(unityProject.path);
@@ -93,6 +126,9 @@ internal sealed class UnityProjectView : Panel
     public void Update(UnityProject unityProject)
     {
         this.unityProject = unityProject;
+        var index = UnityHubUtils.UnityProjects.IndexOf(unityProject);
+        _moveDownMenuItem.IsEnabled = index >= 0 && index < UnityHubUtils.UnityProjects.Count - 1;
+        _moveUpMenuItem.IsEnabled = index > 0 && index < UnityHubUtils.UnityProjects.Count;
         _titleTextBlock.Text = unityProject.name;
         _pathTextBlock.Text = unityProject.path;
         _unityVersionComboBox.SelectedIndex = unityProject.unity.HasValue
