@@ -33,6 +33,8 @@ class MainWindow : Window
         Instance = this;
         DataContext = data;
         Title = "UnityHubNative.Net";
+        if (UnityHubNativeNetApp.Config.extendToTitlebar)
+            ExtendClientAreaToDecorationsHint = true;
         Content = CreateContent();
         ReloadEverything();
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -169,59 +171,66 @@ class MainWindow : Window
     {
         LastChildFill = true,
         HorizontalAlignment = HorizontalAlignment.Stretch,
-        VerticalAlignment = VerticalAlignment.Stretch
+        VerticalAlignment = VerticalAlignment.Stretch,
     }.AddChildren
     ([
-        new Menu
+        new DockPanel
         {
-        }.SetDock(Dock.Top).AddItems
+            LastChildFill = false
+        }.AddChildren
         ([
-            new MenuItem
+            new Menu
             {
-                Header = "_File"
-            }.AddItems
+            }.SetDock(Dock.Left).AddItems
             ([
                 new MenuItem
                 {
-                    Header = "_Create New Project",
-                    HotKey = new KeyGesture(Key.N, KeyModifiers.Control),
-                    InputGesture = new KeyGesture(Key.N, KeyModifiers.Control),
-                }.OnClick(OnCreateNewProjectClicked),
+                    Background = Brushes.Transparent,
+                    Header = "_File"
+                }.AddItems
+                ([
+                    new MenuItem
+                    {
+                        Header = "_Create New Project",
+                        HotKey = new KeyGesture(Key.N, KeyModifiers.Control),
+                        InputGesture = new KeyGesture(Key.N, KeyModifiers.Control),
+                    }.OnClick(OnCreateNewProjectClicked),
+                    new MenuItem
+                    {
+                        Header = "_Add Existing Project",
+                        HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
+                        InputGesture = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift)
+                    }.OnClick(OnAddExistingProjectClicked),
+                    new MenuItem
+                    {
+                        Header = "_Reload Data",
+                        HotKey = new KeyGesture(Key.R, KeyModifiers.Control),
+                        InputGesture = new KeyGesture(Key.R, KeyModifiers.Control),
+                    }.OnClick(ReloadEverything),
+                ]),
                 new MenuItem
                 {
-                    Header = "_Add Existing Project",
-                    HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
-                    InputGesture = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift)
-                }.OnClick(OnAddExistingProjectClicked),
+                    Header = "_Project",
+                }.AddItems
+                (CreateProjectMenuItems(() => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
                 new MenuItem
                 {
-                    Header = "_Reload Data",
-                    HotKey = new KeyGesture(Key.R, KeyModifiers.Control),
-                    InputGesture = new KeyGesture(Key.R, KeyModifiers.Control),
-                }.OnClick(ReloadEverything),
+                    Header = "_Window",
+                }.AddItems
+                ([
+                    new MenuItem
+                    {
+                        Header = "_Close Window",
+                        HotKey = new(Key.W, KeyModifiers.Control),
+                        InputGesture = new(Key.W, KeyModifiers.Control)
+                    }.OnClick(static () => Instance.Close()),
+                    new MenuItem
+                    {
+                        Header = "_About UnityHubNative.Net",
+                    }.OnClick(OnAboutClicked),
+                ]),
             ]),
-            new MenuItem
-            {
-                Header = "_Project",
-            }.AddItems
-            (CreateProjectMenuItems(() => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
-            new MenuItem
-            {
-                Header = "_Window",
-            }.AddItems
-            ([
-                new MenuItem
-                {
-                    Header = "_Close Window",
-                    HotKey = new(Key.W, KeyModifiers.Control),
-                    InputGesture = new(Key.W, KeyModifiers.Control)
-                }.OnClick(static () => Instance.Close()),
-                new MenuItem
-                {
-                    Header = "_About UnityHubNative.Net",
-                }.OnClick(OnAboutClicked),
-            ]),
-        ]),
+        ]).SetDock(Dock.Top),
         new DockPanel
         {
         }.AddChildren
@@ -378,17 +387,33 @@ class MainWindow : Window
                             ([
                                 new TextBlock
                                 {
-                                    Text = "Transparent Window",
+                                    Text = "Appearance",
                                     VerticalAlignment = VerticalAlignment.Center,
-                                }.SetDock(Dock.Left),
-                                new CheckBox
-                                {
-                                    IsChecked = UnityHubNativeNetApp.Config.transparent,
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
-                            ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
-                        }.SetDock(Dock.Top).AddItems
+                                }.SetTooltip("Control the appearence of the app. Can affect performance.").SetDock(Dock.Left)
+                            ]),
+                        }.SetTooltip("")
+                        .SetDock(Dock.Top)
+                        .AddItems
                         ([
+                            new SettingsExpanderItem
+                            {
+                                Content = new DockPanel
+                                {
+                                    LastChildFill = false
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Transparent Window",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.SetDock(Dock.Left),
+                                    new CheckBox
+                                    {
+                                        IsChecked = UnityHubNativeNetApp.Config.transparent,
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
+                                ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
+                            },
                             new SettingsExpanderItem
                             {
                                 Content = s_transparentPanel = new DockPanel
@@ -440,6 +465,24 @@ class MainWindow : Window
                                         Value = UnityHubNativeNetApp.Config.blurIntensity
                                     }.OnValueChanged(OnAcrylicIntensitySliderValueChanged).SetDock(Dock.Right)
                                 ]).SetDock(Dock.Top)
+                            },
+                            new SettingsExpanderItem
+                            {
+                                Content = new DockPanel
+                                {
+                                    LastChildFill = false,
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Extend to Titlebar",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.SetTooltip("Extends the client area to the titlebar.").SetDock(Dock.Left),
+                                    new CheckBox
+                                    {
+                                        IsChecked = UnityHubNativeNetApp.Config.extendToTitlebar
+                                    }.OnCheckChanged(OnExtendToTitlebarCheckChanged).SetDock(Dock.Right)
+                                ]).SetDock(Dock.Top)
                             }
                         ]),
                         new SettingsExpander
@@ -482,6 +525,13 @@ class MainWindow : Window
             ])
         ])
     ]);
+
+    static void OnExtendToTitlebarCheckChanged()
+    {
+        UnityHubNativeNetApp.Config.extendToTitlebar = !UnityHubNativeNetApp.Config.extendToTitlebar;
+        Instance.ExtendClientAreaToDecorationsHint = UnityHubNativeNetApp.Config.extendToTitlebar;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
 
     public static MenuItem[] CreateProjectMenuItems(Func<UnityProject> unityProjectGetter)
     {

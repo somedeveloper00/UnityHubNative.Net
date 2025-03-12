@@ -53,6 +53,7 @@ public sealed class UnityHubNativeNetApp : Application
                 acrylic = txt.Length >= 2 && txt[1] == "true",
                 blurIntensity = txt.Length >= 3 && float.TryParse(txt[2], out var acrylicAmount) ? acrylicAmount : 0.2f,
                 closeAfterProjectOpen = txt.Length >= 4 && txt[3] == "true",
+                extendToTitlebar = txt.Length >= 5 && txt[4] == "true",
             };
         }
         catch (Exception ex)
@@ -70,6 +71,7 @@ public sealed class UnityHubNativeNetApp : Application
             config.acrylic ? "true" : "false",
             config.blurIntensity.ToString(),
             config.closeAfterProjectOpen ? "true" : "false",
+            config.extendToTitlebar ? "true" : "false",
         ]);
     }
 
@@ -78,6 +80,7 @@ public sealed class UnityHubNativeNetApp : Application
         public bool transparent;
         public bool acrylic;
         public float blurIntensity;
+        public bool extendToTitlebar;
         public bool closeAfterProjectOpen;
     }
 }
