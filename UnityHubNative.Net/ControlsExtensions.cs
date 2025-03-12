@@ -111,6 +111,12 @@ public static class ControlsExtensions
         return menuItem;
     }
 
+    public static MenuItem OnLayoutUpdate(this MenuItem menuItem, Action<MenuItem> callback)
+    {
+        menuItem.LayoutUpdated += (obj, args) => callback((MenuItem)obj);
+        return menuItem;
+    }
+
     public static MenuFlyoutItem OnClick(this MenuFlyoutItem menuItem, params Action[] callbacks)
     {
         for (int i = 0; i < callbacks.Length; i++)

@@ -16,20 +16,14 @@ class MainWindow : Window
     const string InstallUnityUrl = "https://unity.com/releases/editor/archive";
 
     public static MainWindow Instance { get; set; }
+
     static ListBox s_unityInstallationsParent;
 
     static ListBox s_unityInstalltionSearchPathsParent;
     static Button s_unityInstallationSearchRemoveBtn;
 
     static SubmitableListBox s_unityProjectsParent;
-    static Button s_revealBtn;
-    static Button s_removeFromListBtn;
-    static Button s_openWithBtn;
     static AutoCompleteBox s_projectSearchBoxAutoComplete;
-
-    static MenuItem s_removeFromListMenuItem;
-    static MenuItem s_revealInFileExplorerMenuItem;
-    static MenuItem s_openInDifferentVersionMenuItem;
 
     static DockPanel s_transparentPanel;
     static Slider s_backgroundBlurIntensitySlider;
@@ -94,10 +88,13 @@ class MainWindow : Window
         UpdateUnityProjectViews();
     }
 
-    public static void OnOpenWithClicked()
+    public static void OpenSelectedProjectWith()
     {
-        var dialogue = new OpenWithDialogue(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()]);
-        dialogue.ShowDialog(Instance);
+        if (TryGetSelectedProject(out var unityProject))
+        {
+            var dialogue = new OpenWithDialogue(unityProject);
+            dialogue.ShowDialog(Instance);
+        }
     }
 
     public static void OnRemoveProjectFromListClicked()
@@ -132,9 +129,9 @@ class MainWindow : Window
             ((UnityProjectView)s_unityProjectsParent.Items[i]!).Update(UnityHubUtils.UnityProjects[i]);
     }
 
-    public static void MoveUnityProjectUp(UnityProject unityProject)
+    public static void MoveSelectedProjectUp()
     {
-        if (unityProject is null)
+        if (!TryGetSelectedProject(out var unityProject) || unityProject is null)
             return;
         var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
         if (ind == -1)
@@ -150,9 +147,9 @@ class MainWindow : Window
         ((UnityProjectView)s_unityProjectsParent.Items[ind + 1]).Update(UnityHubUtils.UnityProjects[ind + 1]);
     }
 
-    public static void MoveUnityProjectDown(UnityProject unityProject)
+    public static void MoveSelectedProjectDown()
     {
-        if (unityProject is null)
+        if (!TryGetSelectedProject(out var unityProject) || unityProject is null)
             return;
         var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
         if (ind == -1)
@@ -181,7 +178,7 @@ class MainWindow : Window
         ([
             new MenuItem
             {
-                Header = "_Project"
+                Header = "_File"
             }.AddItems
             ([
                 new MenuItem
@@ -196,25 +193,6 @@ class MainWindow : Window
                     HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
                     InputGesture = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift)
                 }.OnClick(OnAddExistingProjectClicked),
-                s_removeFromListMenuItem = new MenuItem
-                {
-                    Header = "_Remove From List",
-                    HotKey = new KeyGesture(Key.Subtract, KeyModifiers.Control),
-                    InputGesture = new KeyGesture(Key.Subtract, KeyModifiers.Control)
-                }.OnClick(OnRemoveProjectFromListClicked),
-                new Separator(),
-                s_revealInFileExplorerMenuItem = new MenuItem
-                {
-                    Header = "_Reveal In File Explorer",
-                    HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
-                    InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
-                }.OnClick(OnRevealProjectClicked),
-                s_openInDifferentVersionMenuItem = new MenuItem
-                {
-                    Header = "_Open In Different Version",
-                    HotKey = new KeyGesture(Key.O, KeyModifiers.Control),
-                    InputGesture = new KeyGesture(Key.O, KeyModifiers.Control),
-                }.OnClick(OnOpenWithClicked),
                 new MenuItem
                 {
                     Header = "_Reload Data",
@@ -222,6 +200,11 @@ class MainWindow : Window
                     InputGesture = new KeyGesture(Key.R, KeyModifiers.Control),
                 }.OnClick(ReloadEverything),
             ]),
+            new MenuItem
+            {
+                Header = "_Project",
+            }.AddItems
+            (CreateProjectMenuItems(() => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
             new MenuItem
             {
                 Header = "_Window",
@@ -271,37 +254,6 @@ class MainWindow : Window
                             u.unityProject.OpenProject();
                             return;
                         }).SetDock(Dock.Top),
-                        new StackPanel
-                        {
-                            Orientation = Orientation.Horizontal,
-                            Margin = new(0, 5),
-                            Spacing = 2,
-                        }.SetDock(Dock.Top).AddChildren
-                        ([
-                            s_revealBtn = new Button
-                            {
-                                Content = "Reveal",
-                                IsEnabled = false,
-                            }.OnClick(OnRevealProjectClicked),
-                            s_removeFromListBtn = new Button
-                            {
-                                Content = "Remove From List",
-                                IsEnabled = false,
-                            }.OnClick(OnRemoveProjectFromListClicked),
-                            new Button
-                            {
-                                Content = "Create New"
-                            }.OnClick(OnCreateNewProjectClicked),
-                            new Button
-                            {
-                                Content = "Add Existing"
-                            }.OnClick(OnAddExistingProjectClicked),
-                            s_openWithBtn = new Button
-                            {
-                                Content = "Open With",
-                                IsEnabled = false,
-                            }.OnClick(OnOpenWithClicked),
-                        ]),
                         new DockPanel
                         {
                             Margin = new(0, 10)
@@ -531,6 +483,52 @@ class MainWindow : Window
         ])
     ]);
 
+    public static MenuItem[] CreateProjectMenuItems(Func<UnityProject> unityProjectGetter)
+    {
+        return
+        [
+            new MenuItem
+            {
+                Header = "Open",
+                HotKey = new(Key.Enter),
+                InputGesture = new(Key.Enter),
+            }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter()?.unity.HasValue == true)
+            .OnClick(OpenSelectedProject),
+            new MenuItem
+            {
+                Header = "Open With",
+                HotKey = new(Key.Enter, KeyModifiers.Alt),
+                InputGesture = new(Key.Enter, KeyModifiers.Alt),
+            }.OnClick(OpenSelectedProjectWith),
+            new MenuItem
+            {
+                Header = "_Reveal In File Explorer",
+                HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
+                InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
+            }.OnClick(RevealSelectedProject),
+            new MenuItem
+            {
+                Header = "Move Up In List",
+                HotKey = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
+                InputGesture = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
+            }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.Skip(1).Contains(unityProjectGetter()))
+            .OnClick(MoveSelectedProjectUp),
+            new MenuItem
+            {
+                Header = "Move Down In List",
+                HotKey = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
+                InputGesture = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
+            }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.SkipLast(1).Contains(unityProjectGetter()))
+            .OnClick(MoveSelectedProjectDown),
+        ];
+    }
+
+    static void OpenSelectedProject()
+    {
+        if (s_unityProjectsParent.SelectedItem is UnityProjectView view)
+            view.OpenProject();
+    }
+
     static void OnCloseAfterOpenProjectCheckboxChanged()
     {
         UnityHubNativeNetApp.Config.closeAfterProjectOpen = !UnityHubNativeNetApp.Config.closeAfterProjectOpen;
@@ -613,12 +611,6 @@ class MainWindow : Window
         var index = GetUnityProjectSelectedIndex();
         Debug.WriteLine($"selection changed to {index}");
         bool isAnySelected = IsAnyProjectSelected();
-
-        // menu bar buttons
-        s_revealBtn.IsEnabled = s_removeFromListBtn.IsEnabled = s_openWithBtn.IsEnabled = isAnySelected;
-
-        // menu items 
-        s_removeFromListMenuItem.IsEnabled = s_revealInFileExplorerMenuItem.IsEnabled = s_openInDifferentVersionMenuItem.IsEnabled = isAnySelected;
     }
 
     static async void AddNewUnitySearchPath()
@@ -660,6 +652,18 @@ class MainWindow : Window
     static int GetSelectedUnityInstallationSearchPathsIndex() => s_unityInstalltionSearchPathsParent.SelectedIndex;
 
     static int GetUnityProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex;
+
+    static bool TryGetSelectedProject(out UnityProject unityProject)
+    {
+        var ind = GetUnityProjectSelectedIndex();
+        if (ind < 0 || ind >= UnityHubUtils.UnityProjects.Count)
+        {
+            unityProject = default;
+            return false;
+        }
+        unityProject = UnityHubUtils.UnityProjects[ind];
+        return true;
+    }
 
     static bool IsAnyProjectSelected()
     {
@@ -711,7 +715,11 @@ class MainWindow : Window
 
     static void OnCreateNewProjectClicked() => new CreateNewProjectDialogue().ShowDialog(Instance);
 
-    static void OnRevealProjectClicked() => OsUtils.OpenExplorer(UnityHubUtils.UnityProjects[GetUnityProjectSelectedIndex()].path);
+    static void RevealSelectedProject()
+    {
+        if (TryGetSelectedProject(out var unityProject))
+            OsUtils.OpenExplorer(unityProject.path);
+    }
 
     static void OnAboutClicked(MenuItem item, RoutedEventArgs args) => new AboutDialogue().ShowDialog(Instance);
 

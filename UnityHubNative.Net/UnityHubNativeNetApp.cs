@@ -28,9 +28,9 @@ public sealed class UnityHubNativeNetApp : Application
     public override void Initialize()
     {
         RequestedThemeVariant = ThemeVariant.Default;
+        Styles.Add(new FluentAvaloniaTheme() { });
         //Styles.Add(new FluentTheme() { DensityStyle = DensityStyle.Compact });
         //Styles.Add(new SimpleTheme());
-        Styles.Add(new FluentAvaloniaTheme() { });
     }
 
     public override void OnFrameworkInitializationCompleted()
