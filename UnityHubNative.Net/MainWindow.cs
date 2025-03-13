@@ -49,6 +49,7 @@ class MainWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+
         // focus on searchbar if typed a character
         if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
         {
@@ -258,11 +259,7 @@ class MainWindow : Window
                                 Content = "🔍",
                                 HorizontalAlignment = HorizontalAlignment.Right,
                             },
-                        }.OnSubmit(u =>
-                        {
-                            u.unityProject.OpenProject();
-                            return;
-                        }).SetDock(Dock.Top),
+                        }.OnSubmit(static u => u.unityProject.OpenProject()).SetDock(Dock.Top),
                         new DockPanel
                         {
                             Margin = new(0, 10)
@@ -540,7 +537,7 @@ class MainWindow : Window
             new MenuItem
             {
                 Header = "Open",
-                HotKey = new(Key.Enter),
+                //HotKey = new(Key.Enter),
                 InputGesture = new(Key.Enter),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter()?.unity.HasValue == true)
             .OnClick(OpenSelectedProject),

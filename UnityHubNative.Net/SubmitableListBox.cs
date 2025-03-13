@@ -26,7 +26,7 @@ class SubmitableListBox : ListBox
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        if (e.InitialPressMouseButton == MouseButton.Left)
+        if (!e.Handled && e.InitialPressMouseButton == MouseButton.Left)
         {
             OnSubmit?.Invoke();
             e.Handled = true;
