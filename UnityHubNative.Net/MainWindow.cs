@@ -27,6 +27,7 @@ class MainWindow : Window
 
     static DockPanel s_transparentPanel;
     static Slider s_backgroundBlurIntensitySlider;
+    static private Key s_lastKey;
 
     public MainWindow(object data)
     {
@@ -49,6 +50,10 @@ class MainWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (e.Key == Key.Escape && s_lastKey == Key.Escape)
+            Close();
+
+        s_lastKey = e.Key;
 
         // focus on searchbar if typed a character
         if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
