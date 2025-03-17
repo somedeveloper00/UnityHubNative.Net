@@ -54,6 +54,7 @@ public sealed class UnityHubNativeNetApp : Application
                 blurIntensity = txt.Length >= 3 && float.TryParse(txt[2], out var acrylicAmount) ? acrylicAmount : 0.2f,
                 closeAfterProjectOpen = txt.Length >= 4 && txt[3] == "true",
                 extendToTitlebar = txt.Length >= 5 && txt[4] == "true",
+                openInTerminalFormat = txt.Length >= 6 ? txt[5] : "cmd.exe /K cd /d \"{path}\"",
             };
         }
         catch (Exception ex)
@@ -72,6 +73,7 @@ public sealed class UnityHubNativeNetApp : Application
             config.blurIntensity.ToString(),
             config.closeAfterProjectOpen ? "true" : "false",
             config.extendToTitlebar ? "true" : "false",
+            config.openInTerminalFormat
         ]);
     }
 
@@ -82,5 +84,6 @@ public sealed class UnityHubNativeNetApp : Application
         public float blurIntensity;
         public bool extendToTitlebar;
         public bool closeAfterProjectOpen;
+        public string openInTerminalFormat;
     }
 }

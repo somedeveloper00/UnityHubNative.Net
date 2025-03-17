@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using MsBox.Avalonia;
+using SkiaSharp;
 
 namespace UnityHubNative.Net;
 
@@ -27,7 +28,9 @@ class MainWindow : Window
 
     static DockPanel s_transparentPanel;
     static Slider s_backgroundBlurIntensitySlider;
-    static private Key s_lastKey;
+    static TextBox s_openInTerminalFormatText;
+    static Key s_lastKey;
+    private static TabControl s_tabControl;
 
     public MainWindow(object data)
     {
@@ -55,29 +58,32 @@ class MainWindow : Window
 
         s_lastKey = e.Key;
 
-        // focus on searchbar if typed a character
-        if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
+        if (s_tabControl.SelectedIndex == 0)
         {
-            if (!s_projectSearchBoxAutoComplete.IsKeyboardFocusWithin)
+            // focus on searchbar if typed a character
+            if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
             {
-                s_projectSearchBoxAutoComplete.Focus();
-                s_projectSearchBoxAutoComplete.Text += e.KeyModifiers == KeyModifiers.Shift ? e.Key.ToString() : e.Key.ToString().ToLower();
-                s_projectSearchBoxAutoComplete.CaretIndex = s_projectSearchBoxAutoComplete.Text.Length;
-                e.Handled = true;
-            }
-            return;
-        }
-
-        // focus on the list of escaped
-        if (e.Key == Key.Escape)
-        {
-            if (s_unityProjectsParent.SelectedItem != null)
-            {
-                s_unityProjectsParent.ContainerFromIndex(GetUnityProjectSelectedIndex())!.Focus();
-                s_projectSearchBoxAutoComplete.Text = string.Empty;
+                if (!s_projectSearchBoxAutoComplete.IsKeyboardFocusWithin)
+                {
+                    s_projectSearchBoxAutoComplete.Focus();
+                    s_projectSearchBoxAutoComplete.Text += e.KeyModifiers == KeyModifiers.Shift ? e.Key.ToString() : e.Key.ToString().ToLower();
+                    s_projectSearchBoxAutoComplete.CaretIndex = s_projectSearchBoxAutoComplete.Text.Length;
+                    e.Handled = true;
+                }
+                return;
             }
 
-            return;
+            // focus on the list of escaped
+            if (e.Key == Key.Escape)
+            {
+                if (s_unityProjectsParent.SelectedItem != null)
+                {
+                    s_unityProjectsParent.ContainerFromIndex(GetUnityProjectSelectedIndex())!.Focus();
+                    s_projectSearchBoxAutoComplete.Text = string.Empty;
+                }
+
+                return;
+            }
         }
     }
 
@@ -247,7 +253,7 @@ class MainWindow : Window
         {
         }.AddChildren
         ([
-            new TabControl
+            s_tabControl = new TabControl
             {
                 TabStripPlacement = Dock.Top,
             }.AddItems
@@ -526,13 +532,38 @@ class MainWindow : Window
                                         VerticalAlignment = VerticalAlignment.Center,
                                     }.OnCheckChanged(OnCloseAfterOpenProjectCheckboxChanged).SetDock(Dock.Right)
                                 ])
-                            }.SetTooltip("If checked, the app will close after opening a project")
+                            }.SetTooltip("If checked, the app will close after opening a project"),
+                            new SettingsExpanderItem
+                            {
+                                Content = new DockPanel
+                                {
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Format to open project in Terminal",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                        Margin = new(0, 0, 10, 0),
+                                    }.SetDock(Dock.Left),
+                                    s_openInTerminalFormatText = new TextBox
+                                    {
+                                        Text = UnityHubNativeNetApp.Config.openInTerminalFormat,
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.OnTextChanged(OnOpenInTerminalFormatChanged).SetDock(Dock.Right)
+                                ])
+                            }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
                         ])
                     ])
                 }
             ])
         ])
     ]);
+
+    static void OnOpenInTerminalFormatChanged()
+    {
+        UnityHubNativeNetApp.Config.openInTerminalFormat = s_openInTerminalFormatText.Text;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
 
     static void OnExtendToTitlebarCheckChanged()
     {

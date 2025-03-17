@@ -230,9 +230,9 @@ public static class ControlsExtensions
         return control;
     }
 
-    public static T OnTextChanged<T>(this T control, Action action) where T : Control
+    public static T OnTextChanged<T>(this T control, Action action) where T : TextBox
     {
-        control.SizeChanged += (_, e) => action();
+        control.TextChanged += (_, e) => action();
         return control;
     }
 
