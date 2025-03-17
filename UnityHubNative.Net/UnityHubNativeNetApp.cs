@@ -36,9 +36,9 @@ public sealed class UnityHubNativeNetApp : Application
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            desktop.MainWindow = new MainWindow(new MainViewModel());
+            desktop.MainWindow = new MainWindow(null);
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewApplication)
-            singleViewApplication.MainView = new MainWindow(new MainViewModel());
+            singleViewApplication.MainView = new MainWindow(null);
         base.OnFrameworkInitializationCompleted();
     }
 

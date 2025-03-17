@@ -105,6 +105,12 @@ class MainWindow : Window
         }
     }
 
+    public static void OpenSelectedProjectInTerminal()
+    {
+        if (TryGetSelectedProject(out var unityProject))
+            OsUtils.OpenInTerminal(unityProject.path);
+    }
+
     public static void OnRemoveProjectFromListClicked()
     {
         UnityHubUtils.UnityProjects.RemoveAt(GetUnityProjectSelectedIndex());
@@ -277,7 +283,7 @@ class MainWindow : Window
                                     WrapSelection = true,
                                     SelectionMode = SelectionMode.AlwaysSelected | SelectionMode.Single,
                                     SelectedIndex = 0,
-                                }.AddOnSubmit(OnUnityProjectListSubmitted).OnSelectionChanged(UnityProjectSelectedIndexChanged)
+                                }.OnSelectionChanged(UnityProjectSelectedIndexChanged)
                             },
                         ]),
                     ])
@@ -554,6 +560,12 @@ class MainWindow : Window
             }.OnClick(OpenSelectedProjectWith),
             new MenuItem
             {
+                Header = "Open In Terminal",
+                HotKey = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
+                InputGesture = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
+            }.OnClick(OpenSelectedProjectInTerminal),
+            new MenuItem
+            {
                 Header = "_Reveal In File Explorer",
                 HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
                 InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
@@ -625,13 +637,6 @@ class MainWindow : Window
             ).Select(p => new UnityProjectView(p));
             return Task.FromResult<IEnumerable<object>>(views);
         }
-    }
-
-    static void OnUnityProjectListSubmitted()
-    {
-        if (!IsAnyProjectSelected())
-            return;
-        ((UnityProjectView)s_unityProjectsParent.Items[GetUnityProjectSelectedIndex()]!).OpenProject();
     }
 
     static void RemoveSelectedUnitySearchPath(Button button, RoutedEventArgs args)
@@ -707,6 +712,11 @@ class MainWindow : Window
 
     static bool TryGetSelectedProject(out UnityProject unityProject)
     {
+        if (s_projectSearchBoxAutoComplete.SelectedItem is UnityProjectView view)
+        {
+            unityProject = view.unityProject;
+            return true;
+        }
         var ind = GetUnityProjectSelectedIndex();
         if (ind < 0 || ind >= UnityHubUtils.UnityProjects.Count)
         {
