@@ -290,9 +290,7 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
         }
 
         if (UnityHubNativeNetApp.Config.closeAfterProjectOpen)
-        {
             MainWindow.Instance.Close();
-        }
     }
 
 }

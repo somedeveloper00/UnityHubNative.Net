@@ -69,7 +69,7 @@ internal sealed class UnityProjectView : Panel
 
     private void OnPathLinkClicked() => OsUtils.OpenExplorer(unityProject.path);
 
-    public async void OpenProject()
+    public void OpenProject()
     {
         if (unityProject is null)
             return;

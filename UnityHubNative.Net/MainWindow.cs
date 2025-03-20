@@ -8,7 +8,6 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using MsBox.Avalonia;
-using SkiaSharp;
 
 namespace UnityHubNative.Net;
 
@@ -60,6 +59,14 @@ class MainWindow : Window
 
         if (s_tabControl.SelectedIndex == 0)
         {
+            // try open project
+            if (e.Key == Key.Enter && TryGetSelectedProject(out var unityProject))
+            {
+                OpenSelectedProject();
+                e.Handled = true;
+                return;
+            }
+
             // focus on searchbar if typed a character
             if (e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift && (int)e.Key >= (int)Key.A && (int)e.Key <= (int)Key.Z)
             {
@@ -289,7 +296,7 @@ class MainWindow : Window
                                     WrapSelection = true,
                                     SelectionMode = SelectionMode.AlwaysSelected | SelectionMode.Single,
                                     SelectedIndex = 0,
-                                }.OnSelectionChanged(UnityProjectSelectedIndexChanged)
+                                }.AddOnSubmit(OpenSelectedProject).OnSelectionChanged(UnityProjectSelectedIndexChanged)
                             },
                         ]),
                     ])
