@@ -121,7 +121,11 @@ class MainWindow : Window
     public static void OpenSelectedProjectInTerminal()
     {
         if (TryGetSelectedProject(out var unityProject))
+        {
             OsUtils.OpenInTerminal(unityProject.path);
+            if (UnityHubNativeNetApp.Config.closeAfterOpenInTerminal)
+                Instance.Close();
+        }
     }
 
     public static void OnRemoveProjectFromListClicked()
@@ -396,7 +400,8 @@ class MainWindow : Window
                     Header = "Options",
                     Content = new DockPanel
                     {
-                        LastChildFill = false
+                        LastChildFill = false,
+                        Margin = new(10),
                     }.AddChildren
                     ([
                         new SettingsExpander
@@ -544,19 +549,42 @@ class MainWindow : Window
                             {
                                 Content = new DockPanel
                                 {
+                                    LastChildFill = false
                                 }.AddChildren
                                 ([
-                                    new TextBlock
+                                    new DockPanel
                                     {
-                                        Text = "Format to open project in Terminal",
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Margin = new(0, 0, 10, 0),
-                                    }.SetDock(Dock.Left),
-                                    s_openInTerminalFormatText = new TextBox
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Format to open project in Terminal",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                            Margin = new(0, 0, 10, 0),
+                                        }.SetDock(Dock.Left),
+                                        s_openInTerminalFormatText = new TextBox
+                                        {
+                                            Text = UnityHubNativeNetApp.Config.openInTerminalFormat,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.OnTextChanged(OnOpenInTerminalFormatChanged).SetDock(Dock.Right)
+                                    ]).SetDock(Dock.Top),
+                                    new DockPanel
                                     {
-                                        Text = UnityHubNativeNetApp.Config.openInTerminalFormat,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.OnTextChanged(OnOpenInTerminalFormatChanged).SetDock(Dock.Right)
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Close after open in terminal",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                            Margin = new(0, 0, 10, 0),
+                                        }.SetDock(Dock.Left),
+                                        new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.closeAfterOpenInTerminal,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.OnCheckChanged(OnCloseAfterOpenInTerminalChanged).SetDock(Dock.Right)
+                                    ]).SetDock(Dock.Top).SetTooltip("Whether or not to close the app after opening project in terminal"),
                                 ])
                             }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
                         ])
@@ -565,6 +593,12 @@ class MainWindow : Window
             ])
         ])
     ]);
+
+    static void OnCloseAfterOpenInTerminalChanged()
+    {
+        UnityHubNativeNetApp.Config.closeAfterOpenInTerminal = !UnityHubNativeNetApp.Config.closeAfterOpenInTerminal;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
 
     static void OnOpenInTerminalFormatChanged()
     {

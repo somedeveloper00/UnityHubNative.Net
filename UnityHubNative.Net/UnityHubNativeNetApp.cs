@@ -55,6 +55,7 @@ public sealed class UnityHubNativeNetApp : Application
                 closeAfterProjectOpen = txt.Length >= 4 && txt[3] == "true",
                 extendToTitlebar = txt.Length >= 5 && txt[4] == "true",
                 openInTerminalFormat = txt.Length >= 6 ? txt[5] : "cmd.exe /K cd /d \"{path}\"",
+                closeAfterOpenInTerminal = txt.Length >= 7 && txt[6] == "true",
             };
         }
         catch (Exception ex)
@@ -73,7 +74,8 @@ public sealed class UnityHubNativeNetApp : Application
             config.blurIntensity.ToString(),
             config.closeAfterProjectOpen ? "true" : "false",
             config.extendToTitlebar ? "true" : "false",
-            config.openInTerminalFormat
+            config.openInTerminalFormat,
+            config.closeAfterOpenInTerminal ? "true" : "false",
         ]);
     }
 
@@ -85,5 +87,6 @@ public sealed class UnityHubNativeNetApp : Application
         public bool extendToTitlebar;
         public bool closeAfterProjectOpen;
         public string openInTerminalFormat;
+        public bool closeAfterOpenInTerminal;
     }
 }
