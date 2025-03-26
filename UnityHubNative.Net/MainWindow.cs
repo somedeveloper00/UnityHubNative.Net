@@ -398,197 +398,202 @@ class MainWindow : Window
                 new TabItem
                 {
                     Header = "Options",
-                    Content = new DockPanel
+                    Content = new ScrollViewer
                     {
-                        LastChildFill = false,
-                        Margin = new(10),
-                    }.AddChildren
-                    ([
-                        new SettingsExpander
+                        IsScrollInertiaEnabled = true,
+                        HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                        Content = new DockPanel
                         {
-                            Header = new DockPanel
-                            {
-                                LastChildFill = false
-                            }.AddChildren
-                            ([
-                                new TextBlock
-                                {
-                                    Text = "Appearance",
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                }.SetTooltip("Control the appearence of the app. Can affect performance.").SetDock(Dock.Left)
-                            ]),
-                        }.SetTooltip("")
-                        .SetDock(Dock.Top)
-                        .AddItems
+                            LastChildFill = false,
+                            Margin = new(10),
+                        }.AddChildren
                         ([
-                            new SettingsExpanderItem
+                            new SettingsExpander
                             {
-                                Content = new DockPanel
+                                Header = new DockPanel
                                 {
                                     LastChildFill = false
                                 }.AddChildren
                                 ([
                                     new TextBlock
                                     {
-                                        Text = "Transparent Window",
+                                        Text = "Appearance",
                                         VerticalAlignment = VerticalAlignment.Center,
-                                    }.SetDock(Dock.Left),
-                                    new CheckBox
-                                    {
-                                        IsChecked = UnityHubNativeNetApp.Config.transparent,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
-                                ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
-                            },
-                            new SettingsExpanderItem
-                            {
-                                Content = s_transparentPanel = new DockPanel
-                                {
-                                    IsEnabled = UnityHubNativeNetApp.Config.transparent,
-                                    LastChildFill = false,
-                                }.AddChildren
-                                ([
-                                    new DockPanel
-                                    {
-                                        LastChildFill = false
-                                    }.AddChildren
-                                    ([
-                                        new TextBlock
-                                        {
-                                            Text = "Acrilyc",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                        }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
-                                        new CheckBox
-                                        {
-                                            IsChecked = UnityHubNativeNetApp.Config.acrylic,
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                        }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right),
-                                    ]).SetDock(Dock.Top),
+                                    }.SetTooltip("Control the appearence of the app. Can affect performance.").SetDock(Dock.Left)
                                 ]),
-                            },
-                            new SettingsExpanderItem
-                            {
-                                Content = new DockPanel
-                                {
-                                    LastChildFill = false,
-                                    IsEnabled = UnityHubNativeNetApp.Config.transparent && UnityHubNativeNetApp.Config.acrylic,
-                                }.AddChildren
-                                ([
-                                    new TextBlock
-                                    {
-                                        Text = "Background Blur Intensity",
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.SetTooltip("Changes the intensity of the background blur.").SetDock(Dock.Left),
-                                    s_backgroundBlurIntensitySlider = new Slider
-                                    {
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                        Minimum = 0,
-                                        Maximum = 1,
-                                        Width = 100,
-                                        TickFrequency = 0.1,
-                                        TickPlacement = TickPlacement.BottomRight,
-                                        IsSnapToTickEnabled = true,
-                                        Value = UnityHubNativeNetApp.Config.blurIntensity
-                                    }.OnValueChanged(OnAcrylicIntensitySliderValueChanged).SetDock(Dock.Right)
-                                ]).SetDock(Dock.Top)
-                            },
-                            new SettingsExpanderItem
-                            {
-                                Content = new DockPanel
-                                {
-                                    LastChildFill = false,
-                                }.AddChildren
-                                ([
-                                    new TextBlock
-                                    {
-                                        Text = "Extend to Titlebar",
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.SetTooltip("Extends the client area to the titlebar.").SetDock(Dock.Left),
-                                    new CheckBox
-                                    {
-                                        IsChecked = UnityHubNativeNetApp.Config.extendToTitlebar
-                                    }.OnCheckChanged(OnExtendToTitlebarCheckChanged).SetDock(Dock.Right)
-                                ]).SetDock(Dock.Top)
-                            }
-                        ]),
-                        new SettingsExpander
-                        {
-                            Header = new DockPanel
-                            {
-                                LastChildFill = false
-                            }.AddChildren
+                            }.SetTooltip("")
+                            .SetDock(Dock.Top)
+                            .AddItems
                             ([
-                                new TextBlock
+                                new SettingsExpanderItem
                                 {
-                                    Text = "Behaviour",
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                }.SetDock(Dock.Left)
-                            ]),
-                        }.SetDock(Dock.Top).AddItems
-                        ([
-                            new SettingsExpanderItem
-                            {
-                                Content = new DockPanel
-                                {
-                                    LastChildFill = false
-                                }.AddChildren
-                                ([
-                                    new TextBlock
-                                    {
-                                        Text = "Close after opening a project",
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.SetDock(Dock.Left),
-                                    new CheckBox
-                                    {
-                                        IsChecked = UnityHubNativeNetApp.Config.closeAfterProjectOpen,
-                                        VerticalAlignment = VerticalAlignment.Center,
-                                    }.OnCheckChanged(OnCloseAfterOpenProjectCheckboxChanged).SetDock(Dock.Right)
-                                ])
-                            }.SetTooltip("If checked, the app will close after opening a project"),
-                            new SettingsExpanderItem
-                            {
-                                Content = new DockPanel
-                                {
-                                    LastChildFill = false
-                                }.AddChildren
-                                ([
-                                    new DockPanel
-                                    {
-                                    }.AddChildren
-                                    ([
-                                        new TextBlock
-                                        {
-                                            Text = "Format to open project in Terminal",
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                            Margin = new(0, 0, 10, 0),
-                                        }.SetDock(Dock.Left),
-                                        s_openInTerminalFormatText = new TextBox
-                                        {
-                                            Text = UnityHubNativeNetApp.Config.openInTerminalFormat,
-                                            VerticalAlignment = VerticalAlignment.Center,
-                                        }.OnTextChanged(OnOpenInTerminalFormatChanged).SetDock(Dock.Right)
-                                    ]).SetDock(Dock.Top),
-                                    new DockPanel
+                                    Content = new DockPanel
                                     {
                                         LastChildFill = false
                                     }.AddChildren
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Close after open in terminal",
+                                            Text = "Transparent Window",
                                             VerticalAlignment = VerticalAlignment.Center,
-                                            Margin = new(0, 0, 10, 0),
                                         }.SetDock(Dock.Left),
                                         new CheckBox
                                         {
-                                            IsChecked = UnityHubNativeNetApp.Config.closeAfterOpenInTerminal,
+                                            IsChecked = UnityHubNativeNetApp.Config.transparent,
                                             VerticalAlignment = VerticalAlignment.Center,
-                                        }.OnCheckChanged(OnCloseAfterOpenInTerminalChanged).SetDock(Dock.Right)
-                                    ]).SetDock(Dock.Top).SetTooltip("Whether or not to close the app after opening project in terminal"),
-                                ])
-                            }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
+                                        }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
+                                    ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
+                                },
+                                new SettingsExpanderItem
+                                {
+                                    Content = s_transparentPanel = new DockPanel
+                                    {
+                                        IsEnabled = UnityHubNativeNetApp.Config.transparent,
+                                        LastChildFill = false,
+                                    }.AddChildren
+                                    ([
+                                        new DockPanel
+                                        {
+                                            LastChildFill = false
+                                        }.AddChildren
+                                        ([
+                                            new TextBlock
+                                            {
+                                                Text = "Acrilyc",
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                            }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
+                                            new CheckBox
+                                            {
+                                                IsChecked = UnityHubNativeNetApp.Config.acrylic,
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                            }.OnCheckChanged(OnAcrylicCheckboxChanged).SetDock(Dock.Right),
+                                        ]).SetDock(Dock.Top),
+                                    ]),
+                                },
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false,
+                                        IsEnabled = UnityHubNativeNetApp.Config.transparent && UnityHubNativeNetApp.Config.acrylic,
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Background Blur Intensity",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetTooltip("Changes the intensity of the background blur.").SetDock(Dock.Left),
+                                        s_backgroundBlurIntensitySlider = new Slider
+                                        {
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                            Minimum = 0,
+                                            Maximum = 1,
+                                            Width = 100,
+                                            TickFrequency = 0.1,
+                                            TickPlacement = TickPlacement.BottomRight,
+                                            IsSnapToTickEnabled = true,
+                                            Value = UnityHubNativeNetApp.Config.blurIntensity
+                                        }.OnValueChanged(OnAcrylicIntensitySliderValueChanged).SetDock(Dock.Right)
+                                    ]).SetDock(Dock.Top)
+                                },
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false,
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Extend to Titlebar",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetTooltip("Extends the client area to the titlebar.").SetDock(Dock.Left),
+                                        new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.extendToTitlebar
+                                        }.OnCheckChanged(OnExtendToTitlebarCheckChanged).SetDock(Dock.Right)
+                                    ]).SetDock(Dock.Top)
+                                }
+                            ]),
+                            new SettingsExpander
+                            {
+                                Header = new DockPanel
+                                {
+                                    LastChildFill = false
+                                }.AddChildren
+                                ([
+                                    new TextBlock
+                                    {
+                                        Text = "Behaviour",
+                                        VerticalAlignment = VerticalAlignment.Center,
+                                    }.SetDock(Dock.Left)
+                                ]),
+                            }.SetDock(Dock.Top).AddItems
+                            ([
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Close after opening a project",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetDock(Dock.Left),
+                                        new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.closeAfterProjectOpen,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.OnCheckChanged(OnCloseAfterOpenProjectCheckboxChanged).SetDock(Dock.Right)
+                                    ])
+                                }.SetTooltip("If checked, the app will close after opening a project"),
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new DockPanel
+                                        {
+                                        }.AddChildren
+                                        ([
+                                            new TextBlock
+                                            {
+                                                Text = "Format to open project in Terminal",
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                                Margin = new(0, 0, 10, 0),
+                                            }.SetDock(Dock.Left),
+                                            s_openInTerminalFormatText = new TextBox
+                                            {
+                                                Text = UnityHubNativeNetApp.Config.openInTerminalFormat,
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                            }.OnTextChanged(OnOpenInTerminalFormatChanged).SetDock(Dock.Right)
+                                        ]).SetDock(Dock.Top),
+                                        new DockPanel
+                                        {
+                                            LastChildFill = false
+                                        }.AddChildren
+                                        ([
+                                            new TextBlock
+                                            {
+                                                Text = "Close after open in terminal",
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                                Margin = new(0, 0, 10, 0),
+                                            }.SetDock(Dock.Left),
+                                            new CheckBox
+                                            {
+                                                IsChecked = UnityHubNativeNetApp.Config.closeAfterOpenInTerminal,
+                                                VerticalAlignment = VerticalAlignment.Center,
+                                            }.OnCheckChanged(OnCloseAfterOpenInTerminalChanged).SetDock(Dock.Right)
+                                        ]).SetDock(Dock.Top).SetTooltip("Whether or not to close the app after opening project in terminal"),
+                                    ])
+                                }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
+                            ])
                         ])
-                    ])
+                    }
                 }
             ])
         ])
