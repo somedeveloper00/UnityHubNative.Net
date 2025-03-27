@@ -56,6 +56,7 @@ public sealed class UnityHubNativeNetApp : Application
                 extendToTitlebar = txt.Length >= 5 && txt[4] == "true",
                 openInTerminalFormat = txt.Length >= 6 ? txt[5] : "cmd.exe /K cd /d \"{path}\"",
                 closeAfterOpenInTerminal = txt.Length >= 7 && txt[6] == "true",
+                saveProjectSelection = txt.Length >= 8 && txt[7] == "true",
             };
         }
         catch (Exception ex)
@@ -76,6 +77,7 @@ public sealed class UnityHubNativeNetApp : Application
             config.extendToTitlebar ? "true" : "false",
             config.openInTerminalFormat,
             config.closeAfterOpenInTerminal ? "true" : "false",
+            config.saveProjectSelection ? "true" : "false",
         ]);
     }
 
@@ -88,5 +90,6 @@ public sealed class UnityHubNativeNetApp : Application
         public bool closeAfterProjectOpen;
         public string openInTerminalFormat;
         public bool closeAfterOpenInTerminal;
+        public bool saveProjectSelection;
     }
 }

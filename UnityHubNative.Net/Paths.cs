@@ -8,6 +8,7 @@ static class Paths
     public static readonly string SearchPathsPath = Path.Combine(Dir, "editorPaths.txt");
     public static readonly string ProjectPathsPath = Path.Combine(Dir, "projects.txt");
     public static readonly string ConfigPath = Path.Combine(Dir, "config.txt");
+    public static readonly string SelectedProject = Path.Combine(Dir, "selected.txt");
 
     static Paths()
     {

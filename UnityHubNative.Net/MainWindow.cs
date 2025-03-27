@@ -30,6 +30,7 @@ class MainWindow : Window
     static TextBox s_openInTerminalFormatText;
     static Key s_lastKey;
     private static TabControl s_tabControl;
+    private static bool _updatingUnityProjectList;
 
     public MainWindow(object data)
     {
@@ -107,6 +108,8 @@ class MainWindow : Window
         UpdateUnityVersionViews();
         UpdateUnitySearchPathViews();
         UpdateUnityProjectViews();
+        if (UnityHubNativeNetApp.Config.saveProjectSelection)
+            LoadProjectSelectedIndex();
     }
 
     public static void OpenSelectedProjectWith()
@@ -154,10 +157,12 @@ class MainWindow : Window
 
     public static void UpdateUnityProjectViews()
     {
+        _updatingUnityProjectList = true;
         SyncListBoxWithView<UnityProject, UnityProjectView>(s_unityProjectsParent, UnityHubUtils.UnityProjects);
 
         for (int i = 0; i < UnityHubUtils.UnityProjects.Count; i++)
             ((UnityProjectView)s_unityProjectsParent.Items[i]!).Update(UnityHubUtils.UnityProjects[i]);
+        _updatingUnityProjectList = false;
     }
 
     public static void MoveSelectedProjectUp()
@@ -591,6 +596,25 @@ class MainWindow : Window
                                         ]).SetDock(Dock.Top).SetTooltip("Whether or not to close the app after opening project in terminal"),
                                     ])
                                 }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = "Remember Unity Project selection",
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetDock(Dock.Left),
+                                        new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.saveProjectSelection,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.OnCheckChanged(OnRememberProjectSelectionChanged).SetDock(Dock.Right)
+                                    ])
+                                }.SetTooltip("If checked, the last selected Unity Project will be kept across sessions"),
                             ])
                         ])
                     }
@@ -598,6 +622,14 @@ class MainWindow : Window
             ])
         ])
     ]);
+
+    static void OnRememberProjectSelectionChanged()
+    {
+        UnityHubNativeNetApp.Config.saveProjectSelection = !UnityHubNativeNetApp.Config.saveProjectSelection;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+        if (UnityHubNativeNetApp.Config.saveProjectSelection)
+            SaveProjectSelectedIndex();
+    }
 
     static void OnCloseAfterOpenInTerminalChanged()
     {
@@ -742,10 +774,13 @@ class MainWindow : Window
 
     static void UnityProjectSelectedIndexChanged()
     {
-        var index = GetUnityProjectSelectedIndex();
-        Debug.WriteLine($"selection changed to {index}");
-        bool isAnySelected = IsAnyProjectSelected();
+        if (!_updatingUnityProjectList && UnityHubNativeNetApp.Config.saveProjectSelection)
+            SaveProjectSelectedIndex();
     }
+
+    static void SaveProjectSelectedIndex() => File.WriteAllText(Paths.SelectedProject, GetUnityProjectSelectedIndex().ToString());
+
+    static void LoadProjectSelectedIndex() => s_unityProjectsParent.SelectedIndex = File.Exists(Paths.SelectedProject) && int.TryParse(File.ReadAllText(Paths.SelectedProject), out var result) ? result : 0;
 
     static async void AddNewUnitySearchPath()
     {
