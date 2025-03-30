@@ -2,5 +2,5 @@ namespace UnityHubNative.Net;
 
 static class Manifest
 {
-    public const string Version = "v0.9";
+    public const string Version = "v0.10";
 }
