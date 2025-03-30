@@ -29,8 +29,8 @@ class MainWindow : Window
     static Slider s_backgroundBlurIntensitySlider;
     static TextBox s_openInTerminalFormatText;
     static Key s_lastKey;
-    private static TabControl s_tabControl;
-    private static bool _updatingUnityProjectList;
+    static TabControl s_tabControl;
+    static bool _updatingUnityProjectList;
 
     public MainWindow(object data)
     {
@@ -61,7 +61,7 @@ class MainWindow : Window
         if (s_tabControl.SelectedIndex == 0)
         {
             // try open project
-            if (e.Key == Key.Enter && TryGetSelectedProject(out var unityProject))
+            if (e.Key == Key.Enter && TryGetSelectedProject(out var _))
             {
                 OpenSelectedProject();
                 e.Handled = true;
@@ -839,12 +839,6 @@ class MainWindow : Window
         return true;
     }
 
-    static bool IsAnyProjectSelected()
-    {
-        var ind = GetUnityProjectSelectedIndex();
-        return ind >= 0 && ind < UnityHubUtils.UnityProjects.Count;
-    }
-
     static async void OnAddExistingProjectClicked()
     {
         try
@@ -912,11 +906,6 @@ class MainWindow : Window
         // delete
         for (int i = parent.Items.Count - 1; i >= items.Count; i--)
             parent.Items.RemoveAt(i);
-    }
-
-    static void ShowTbiDialogue()
-    {
-        _ = MessageBoxManager.GetMessageBoxStandard("To be implemented", "Not implemented yet", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowWindowDialogAsync(Instance);
     }
 
     void SetupBackground()
