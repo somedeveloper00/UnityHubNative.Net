@@ -1,4 +1,4 @@
-# Unity Hub Native .Net
+# Unity Hub Native .Net <img width="30" alt="image" src="Windows/res/icon.ico">
 
 **UnityHubNative.Net** is a lightweight C#/Avalonia alternative to the unnecessarily heavy official Unity Hub, built using [Avalonia](https://avaloniaui.net). This means that, instead of using heavy web components like the official Electron hub, it uses native GUI components on all platforms.
 
