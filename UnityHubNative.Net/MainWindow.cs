@@ -675,6 +675,12 @@ class MainWindow : Window
             }.OnClick(OpenSelectedProjectInTerminal),
             new MenuItem
             {
+                Header = "R_emove From List",
+                HotKey = new(Key.Delete),
+                InputGesture = new(Key.Delete)
+            }.OnClick(OnRemoveProjectFromListClicked),
+            new MenuItem
+            {
                 Header = "_Reveal In File Explorer",
                 HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
                 InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),

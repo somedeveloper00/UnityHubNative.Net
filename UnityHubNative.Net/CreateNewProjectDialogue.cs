@@ -7,7 +7,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace UnityHubNative.Net;
 
@@ -17,7 +16,7 @@ sealed class CreateNewProjectDialogue : Window
     TextBox _nameTextBox;
     ComboBox _versionSelector;
     ListBox _templatesParent;
-    private Button _createButton;
+    Button _createButton;
 
     public CreateNewProjectDialogue()
     {
@@ -25,6 +24,7 @@ sealed class CreateNewProjectDialogue : Window
         Content = CreateContent();
         UpdateVersionSelectionViews();
         UpdateTemplateViews();
+        UpdateCreateButtonView();
 
         SizeToContent = SizeToContent.WidthAndHeight;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -77,7 +77,7 @@ sealed class CreateNewProjectDialogue : Window
                     MaxLines = 1,
                     VerticalAlignment = VerticalAlignment.Center,
                     Watermark = "New Unity Project"
-                },
+                }.OnTextChanged(UpdateCreateButtonView),
             ]).SetDock(Dock.Top),
             new DockPanel
             {
@@ -100,7 +100,7 @@ sealed class CreateNewProjectDialogue : Window
                     MaxLines = 1,
                     VerticalAlignment = VerticalAlignment.Center,
                     Watermark = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
-                },
+                }.OnTextChanged(UpdateCreateButtonView),
             ]).SetDock(Dock.Top),
             new Separator
             {
@@ -153,33 +153,48 @@ sealed class CreateNewProjectDialogue : Window
         ]);
     }
 
-    void OnCreateClicked()
+    async void OnCreateClicked()
     {
         if (TryGetSelectedUnityInstallation(out var installation))
         {
             try
             {
-                Task.Run(() => Process.Start(new ProcessStartInfo
+                var unityInstallation = UnityHubUtils.UnityInstallations[_versionSelector.SelectedIndex];
+                string templatePath = unityInstallation.GetTemplatePaths()[_templatesParent.SelectedIndex];
+                string projectPath = Path.Combine(_pathTextBox.Text!, _nameTextBox.Text!);
+                string args = $"-createProject \"{projectPath}\" -cloneFromTemplate \"{templatePath}\"";
+                var startInfo = new ProcessStartInfo
                 {
                     FileName = installation.path,
-                    Arguments = $"-createProject \"{_pathTextBox}\" -cloneFromTemplate \"{UnityHubUtils.UnityInstallations[_templatesParent.SelectedIndex].path}\"",
+                    Arguments = args,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true
-                }));
-                Close();
+                };
+
+                _ = Task.Run(() => Process.Start(startInfo));
+
+                UnityHubUtils.UnityProjects.Add(new(projectPath, DateTime.UtcNow, unityInstallation));
+                UnityHubUtils.SaveUnityProjects();
+                MainWindow.UpdateUnityProjectViews();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                MessageBoxManager.GetMessageBoxStandard("Cannot Create Project", $"Cannot create project at {_pathTextBox} because an error occurred: {ex.Message}", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                Debug.WriteLine(exception.Message);
             }
+
+            Close();
         }
     }
 
     void OnCancelClicked() => Close();
 
-    void OnVersionSelectionChanged() => UpdateTemplateViews();
+    void OnVersionSelectionChanged()
+    {
+        UpdateTemplateViews();
+        UpdateCreateButtonView();
+    }
 
     void UpdateVersionSelectionViews()
     {
@@ -196,7 +211,6 @@ sealed class CreateNewProjectDialogue : Window
         if (TryGetSelectedUnityInstallation(out var installation))
             foreach (var path in installation.GetTemplatePaths())
                 _templatesParent.Items.Add(Path.GetFileName(path));
-        UpdateCreateButtonView();
     }
 
     void UpdateCreateButtonView() => _createButton.IsEnabled = _templatesParent.Items.Count > 0 && Directory.Exists(_pathTextBox.Text) && _nameTextBox.Text?.Length > 0;
