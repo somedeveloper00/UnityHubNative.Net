@@ -11,7 +11,7 @@ using MsBox.Avalonia;
 
 namespace UnityHubNative.Net;
 
-class MainWindow : Window
+sealed class MainWindow : Window
 {
     const string InstallUnityUrl = "https://unity.com/releases/editor/archive";
 
@@ -99,7 +99,7 @@ class MainWindow : Window
     {
         base.OnOpened(e);
         if (s_unityProjectsParent.SelectedItem != null)
-            s_unityProjectsParent.ContainerFromIndex(0)!.Focus();
+            s_unityProjectsParent.ContainerFromIndex(s_unityInstallationsParent.SelectedIndex)!.Focus();
     }
 
     public static void ReloadEverything()

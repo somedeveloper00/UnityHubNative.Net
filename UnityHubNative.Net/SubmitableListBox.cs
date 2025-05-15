@@ -1,9 +1,10 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace UnityHubNative.Net;
 
-class SubmitableListBox : ListBox
+sealed class SubmitableListBox : ListBox
 {
     static readonly KeyGesture[] DefaultSubmitGesture =
     [
@@ -22,6 +23,8 @@ class SubmitableListBox : ListBox
     public KeyGesture[] submitGestures = DefaultSubmitGesture;
 
     protected override Type StyleKeyOverride => typeof(ListBox);
+
+    private bool _firstTime = true;
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
@@ -42,7 +45,18 @@ class SubmitableListBox : ListBox
             e.Handled = true;
             return;
         }
-        base.OnKeyDown(e);
+        if (_firstTime)
+        {
+            _firstTime = false;
+            var lastSelectedIndex = SelectedIndex;
+            base.OnKeyDown(e);
+            if (SelectedIndex == 1)
+                SelectedIndex = lastSelectedIndex + 1;
+            else if (SelectedIndex == ItemCount - 1)
+                SelectedIndex = lastSelectedIndex == 0 ? ItemCount - 1 : lastSelectedIndex - 1;
+        }
+        else
+            base.OnKeyDown(e);
     }
 
     public SubmitableListBox AddOnSubmit(Action callback)
