@@ -45,18 +45,8 @@ sealed class SubmitableListBox : ListBox
             e.Handled = true;
             return;
         }
-        if (_firstTime)
-        {
-            _firstTime = false;
-            var lastSelectedIndex = SelectedIndex;
-            base.OnKeyDown(e);
-            if (SelectedIndex == 1)
-                SelectedIndex = lastSelectedIndex + 1;
-            else if (SelectedIndex == ItemCount - 1)
-                SelectedIndex = lastSelectedIndex == 0 ? ItemCount - 1 : lastSelectedIndex - 1;
-        }
-        else
-            base.OnKeyDown(e);
+        ContainerFromIndex(SelectedIndex)!.Focus();
+        base.OnKeyDown(e);
     }
 
     public SubmitableListBox AddOnSubmit(Action callback)
