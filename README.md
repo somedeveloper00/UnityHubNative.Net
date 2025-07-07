@@ -16,6 +16,7 @@ It launches many times faster, uses far less memory and CPU, and is a fraction o
 - Modern Fluent2 theme, including support for dark and light mode and Mica blur for Windows
 - Add an existing project to the list using the Add Existing button*
 - Create new unity projects with templates, for any modern Unity version you have installed, with the Create New button
+- Open project in terminal
 - *[TBA] Manage Unity licenses*
 
 UnityHubNative.Net does not have every feature that the official hub has, but it has most of them. UnityHubNative.Net serves as a shortcut to get into your projects faster. 
