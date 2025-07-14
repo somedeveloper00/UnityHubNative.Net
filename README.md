@@ -19,6 +19,20 @@ It launches many times faster, uses far less memory and CPU, and is a fraction o
 - Open project in terminal
 - *[TBA] Manage Unity licenses*
 
+## Shortcuts ⌨️
+- Open selected project: ENTER
+- Open selected project with different version: ALT+ENTER
+- Open selected project's directory in terminal: SHIFT+ALT+ENTER
+- Remove selected proejct from the list: DEL
+- Relveal selected project in File Explorer: CTRL+F
+- Move selected projct up in the list: SHIFT+ALT+Up
+- Move selected projct down in the list: SHIFT+ALT+Down
+- Quit: ESCAPE ESCAPE (or CTRL+W)
+- Focus on searchbar and start searching: Any alphabet key
+- Open New Project dialogue: Ctrl+N
+- Add existing project: SHIFT+CTRL+N
+- Reload data: CTRL+R
+
 UnityHubNative.Net does not have every feature that the official hub has, but it has most of them. UnityHubNative.Net serves as a shortcut to get into your projects faster. 
 
 ## Installation 🔧
@@ -46,3 +60,6 @@ Make sure to include as many details as possible.
 
 ## Contact 📧
 If you have any questions, feel free to contact me at [barari.saeed.am@outlook.com](mailto:barari.saeed.am@outlook.com?subject=NativeUnityHub.Net%20Inquiry&body=Hello,%20I%20have%20a%20question%20about%20your%20project.)
+
+## OS
+Support for OSes other than Windows has not been tested
