@@ -165,24 +165,6 @@ sealed class MainWindow : Window
         _updatingUnityProjectList = false;
     }
 
-    public static void MoveSelectedProjectUp()
-    {
-        if (!TryGetSelectedProject(out var unityProject) || unityProject is null)
-            return;
-        var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
-        if (ind == -1)
-            return;
-        if (ind == UnityHubUtils.UnityProjects.Count - 1)
-            return;
-        UnityHubUtils.UnityProjects.RemoveAt(ind);
-        UnityHubUtils.UnityProjects.Insert(ind + 1, unityProject);
-        UnityHubUtils.SaveUnityProjects();
-        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[ind + 1]) = (s_unityProjectsParent.Items[ind + 1], s_unityProjectsParent.Items[ind]);
-        s_unityProjectsParent.SelectedIndex = ind + 1;
-        ((UnityProjectView)s_unityProjectsParent.Items[ind]).Update(UnityHubUtils.UnityProjects[ind]);
-        ((UnityProjectView)s_unityProjectsParent.Items[ind + 1]).Update(UnityHubUtils.UnityProjects[ind + 1]);
-    }
-
     public static void MoveSelectedProjectDown()
     {
         if (!TryGetSelectedProject(out var unityProject) || unityProject is null)
@@ -190,15 +172,29 @@ sealed class MainWindow : Window
         var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
         if (ind == -1)
             return;
-        if (ind == 0)
-            return;
-        UnityHubUtils.UnityProjects.RemoveAt(ind);
-        UnityHubUtils.UnityProjects.Insert(ind - 1, unityProject);
+        var replacedIndex = (ind + 1) %  UnityHubUtils.UnityProjects.Count;
+        (UnityHubUtils.UnityProjects[ind], UnityHubUtils.UnityProjects[replacedIndex]) = (UnityHubUtils.UnityProjects[replacedIndex], UnityHubUtils.UnityProjects[ind]);
         UnityHubUtils.SaveUnityProjects();
-        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[ind - 1]) = (s_unityProjectsParent.Items[ind - 1], s_unityProjectsParent.Items[ind]);
-        s_unityProjectsParent.SelectedIndex = ind - 1;
+        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[replacedIndex]) = (s_unityProjectsParent.Items[replacedIndex], s_unityProjectsParent.Items[ind]);
+        s_unityProjectsParent.SelectedIndex = replacedIndex;
         ((UnityProjectView)s_unityProjectsParent.Items[ind]).Update(UnityHubUtils.UnityProjects[ind]);
-        ((UnityProjectView)s_unityProjectsParent.Items[ind - 1]).Update(UnityHubUtils.UnityProjects[ind - 1]);
+        ((UnityProjectView)s_unityProjectsParent.Items[replacedIndex]).Update(UnityHubUtils.UnityProjects[replacedIndex]);
+    }
+
+    public static void MoveSelectedProjectUp()
+    {
+        if (!TryGetSelectedProject(out var unityProject) || unityProject is null)
+            return;
+        var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
+        if (ind == -1)
+            return;
+        var replacedIndex = ind == 0 ? UnityHubUtils.UnityProjects.Count - 1 : ind - 1;
+        (UnityHubUtils.UnityProjects[ind], UnityHubUtils.UnityProjects[replacedIndex]) = (UnityHubUtils.UnityProjects[replacedIndex], UnityHubUtils.UnityProjects[ind]);
+        UnityHubUtils.SaveUnityProjects();
+        (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[replacedIndex]) = (s_unityProjectsParent.Items[replacedIndex], s_unityProjectsParent.Items[ind]);
+        s_unityProjectsParent.SelectedIndex = replacedIndex;
+        ((UnityProjectView)s_unityProjectsParent.Items[ind]).Update(UnityHubUtils.UnityProjects[ind]);
+        ((UnityProjectView)s_unityProjectsParent.Items[replacedIndex]).Update(UnityHubUtils.UnityProjects[replacedIndex]);
     }
 
     static Control CreateContent() => new DockPanel

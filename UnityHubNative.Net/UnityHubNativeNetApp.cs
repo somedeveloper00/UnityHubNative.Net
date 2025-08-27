@@ -1,8 +1,8 @@
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using FluentAvalonia.Styling;
+using System.Diagnostics;
 
 namespace UnityHubNative.Net;
 
