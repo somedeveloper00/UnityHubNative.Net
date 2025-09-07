@@ -30,8 +30,6 @@ public sealed class UnityHubNativeNetApp : Application
     {
         RequestedThemeVariant = ThemeVariant.Default;
         Styles.Add(new FluentAvaloniaTheme() { });
-        //Styles.Add(new FluentTheme() { DensityStyle = DensityStyle.Compact });
-        //Styles.Add(new SimpleTheme());
     }
 
     public override void OnFrameworkInitializationCompleted()
