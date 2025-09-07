@@ -6,7 +6,10 @@ public interface ILocalization
     [
         new LocalizationEnglish(),
         new LocalizationFarsi(),
-        new LocalizationNihongo()
+        new LocalizationNihongo(),
+        new LocalizationZhongwenJianti(),
+        new LocalizationPolski(),
+        new LocalizationArabic()
     ];
 
     public static bool TryGetFromCode(string code, out ILocalization localization)
