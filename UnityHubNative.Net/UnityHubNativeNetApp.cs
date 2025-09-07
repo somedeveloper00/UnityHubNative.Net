@@ -1,8 +1,9 @@
+using System.Diagnostics;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using FluentAvalonia.Styling;
-using System.Diagnostics;
 
 namespace UnityHubNative.Net;
 
@@ -57,6 +58,7 @@ public sealed class UnityHubNativeNetApp : Application
                 openInTerminalFormat = txt.Length >= 6 ? txt[5] : "cmd.exe /K cd /d \"{path}\"",
                 closeAfterOpenInTerminal = txt.Length >= 7 && txt[6] == "true",
                 saveProjectSelection = txt.Length >= 8 && txt[7] == "true",
+                language = txt.Length >= 9 && ILocalization.TryGetFromCode(txt[8], out var localization) ? localization : ILocalization.TryGetFromCode(CultureInfo.CurrentCulture.TwoLetterISOLanguageName, out localization) ? localization : ILocalization.AllLocalizations[0]
             };
         }
         catch (Exception ex)
@@ -78,6 +80,7 @@ public sealed class UnityHubNativeNetApp : Application
             config.openInTerminalFormat,
             config.closeAfterOpenInTerminal ? "true" : "false",
             config.saveProjectSelection ? "true" : "false",
+            config.language.LanguageCode
         ]);
     }
 
@@ -91,5 +94,6 @@ public sealed class UnityHubNativeNetApp : Application
         public string openInTerminalFormat;
         public bool closeAfterOpenInTerminal;
         public bool saveProjectSelection;
+        public ILocalization language;
     }
 }

@@ -10,21 +10,21 @@ sealed class OpenWithDialogue : Window
     private readonly UnityProject _unityProject;
     private ListBox _unityVersionListBox;
     private ComboBox _platformOptionsComboBox;
-    static readonly string[] s_platformOptions = [
-        "Current Platform",
-        "Windows",
-        "MacOs",
-        "Linux",
-        "iOS",
-        "Android",
-        "WebGL",
-        "UWP"
+    readonly string[] platformOptions = [
+        UnityHubNativeNetApp.Config.language.CurrentPlatform,
+        UnityHubNativeNetApp.Config.language.Platform_Windows,
+        UnityHubNativeNetApp.Config.language.Platform_MacOs,
+        UnityHubNativeNetApp.Config.language.Platform_Linux,
+        UnityHubNativeNetApp.Config.language.Platform_iOS,
+        UnityHubNativeNetApp.Config.language.Platform_Android,
+        UnityHubNativeNetApp.Config.language.Platform_WebGL,
+        UnityHubNativeNetApp.Config.language.Platform_UWP
     ];
 
     public OpenWithDialogue(UnityProject unityProject)
     {
         _unityProject = unityProject;
-        Title = "Open With Specific Editor";
+        Title = UnityHubNativeNetApp.Config.language.OpenWithSpecificEditor;
         Content = CreateContent();
 
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -64,7 +64,7 @@ sealed class OpenWithDialogue : Window
         ([
             new TextBlock
             {
-                Text = $"Select editor verison to open \"{_unityProject.name}\""
+                Text = string.Format(UnityHubNativeNetApp.Config.language.SelectEditorVerisonToOpen, _unityProject.name)
             }.SetDock(Dock.Top),
             _unityVersionListBox = new ListBox
             {
@@ -98,15 +98,15 @@ sealed class OpenWithDialogue : Window
                 AutoScrollToSelectedItem = true,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
                 IsTextSearchEnabled = true,
-            }.AddItems(GetPlatformItems()).SetDock(Dock.Top),
+            }.AddItems(platformOptions).SetDock(Dock.Top),
             new Button
             {
-                Content = "_Open",
+                Content = UnityHubNativeNetApp.Config.language.Menu_Open,
                 HotKey = new(Key.Enter),
             }.OnClick(OnOpenClicked).SetDock(Dock.Right),
             new Button
             {
-                Content = "_Cancel",
+                Content = UnityHubNativeNetApp.Config.language.Cancel,
                 HotKey = new(Key.Escape),
             }.OnClick(OnCancelClicked).SetDock(Dock.Right),
         ])
@@ -119,6 +119,4 @@ sealed class OpenWithDialogue : Window
         var proj = new UnityProject(_unityProject.path, _unityProject.lastModifiedDate, UnityHubUtils.UnityInstallations[_unityVersionListBox.SelectedIndex]);
         proj.OpenProject((UnityPlatform)_platformOptionsComboBox.SelectedIndex);
     }
-
-    private static object[] GetPlatformItems() => s_platformOptions;
 }

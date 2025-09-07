@@ -20,7 +20,7 @@ sealed class CreateNewProjectDialogue : Window
 
     public CreateNewProjectDialogue()
     {
-        Title = "Create a New Unity Project";
+        Title = UnityHubNativeNetApp.Config.language.CreateANewUnityProject;
         Content = CreateContent();
         UpdateVersionSelectionViews();
         UpdateTemplateViews();
@@ -47,7 +47,7 @@ sealed class CreateNewProjectDialogue : Window
 
         if (UnityHubUtils.UnityInstallations.Count == 0)
         {
-            await MessageBoxManager.GetMessageBoxStandard("Can't create new projects", "No Unity Installations found").ShowAsPopupAsync(this);
+            await MessageBoxManager.GetMessageBoxStandard(UnityHubNativeNetApp.Config.language.CantCreateNewProjects, UnityHubNativeNetApp.Config.language.NoUnityInstallationsFound).ShowAsPopupAsync(this);
             Close();
             return;
         }
@@ -68,7 +68,7 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
-                    Text = "Project Name",
+                    Text = UnityHubNativeNetApp.Config.language.ProjectName,
                     VerticalAlignment = VerticalAlignment.Center,
                     Width = 100,
                 }.SetDock(Dock.Left),
@@ -76,7 +76,7 @@ sealed class CreateNewProjectDialogue : Window
                 {
                     MaxLines = 1,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Watermark = "New Unity Project"
+                    Watermark = UnityHubNativeNetApp.Config.language.NewUnityProject
                 }.OnTextChanged(UpdateCreateButtonView),
             ]).SetDock(Dock.Top),
             new DockPanel
@@ -86,13 +86,13 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
-                    Text = "Location",
+                    Text = UnityHubNativeNetApp.Config.language.Location,
                     Width = 100,
                     VerticalAlignment = VerticalAlignment.Center,
                 }.SetDock(Dock.Left),
                 new Button
                 {
-                    Content = "Choose",
+                    Content = UnityHubNativeNetApp.Config.language.Choose,
                     Margin = new(2)
                 }.OnClick(OnChooseLocationClicked).SetDock(Dock.Right),
                 _pathTextBox = new TextBox
@@ -114,7 +114,7 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
-                    Text = "Select Template For Version",
+                    Text = UnityHubNativeNetApp.Config.language.SelectTemplateForVersion,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new(0, 0, 5, 0),
                 }.SetDock(Dock.Left),
@@ -131,18 +131,18 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 _createButton = new Button
                 {
-                    Content = "Create",
+                    Content = UnityHubNativeNetApp.Config.language.Create,
                     IsEnabled = false,
                     Margin = new(2),
                     VerticalAlignment = VerticalAlignment.Center,
-                }.OnClick(OnCreateClicked).SetTooltip("Create the Unity Project with the specified attributes").SetDock(Dock.Right),
+                }.OnClick(OnCreateClicked).SetTooltip(UnityHubNativeNetApp.Config.language.CreateTheUnityProjectWithTheSpecifiedAttributes).SetDock(Dock.Right),
                 new Button
                 {
-                    Content = "Cancel",
+                    Content = UnityHubNativeNetApp.Config.language.Cancel,
                     HotKey = new(Key.Escape),
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new(2),
-                }.OnClick(OnCancelClicked).SetTooltip("Cancel the creation of a new Unity Project").SetDock(Dock.Right),
+                }.OnClick(OnCancelClicked).SetTooltip(UnityHubNativeNetApp.Config.language.CancelTheCreationOfANewUnityProject).SetDock(Dock.Right),
             ]).SetDock(Dock.Bottom),
             _templatesParent = new ListBox
             {
@@ -231,7 +231,7 @@ sealed class CreateNewProjectDialogue : Window
         var path = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             AllowMultiple = false,
-            Title = "Select where to write the Unity project"
+            Title = UnityHubNativeNetApp.Config.language.SelectWhereToWriteTheUnityProject
         });
         if (path is null || path.Count == 0 || path[0] is null)
             return;

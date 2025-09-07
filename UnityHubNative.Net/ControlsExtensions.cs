@@ -224,6 +224,12 @@ public static class ControlsExtensions
         return control;
     }
 
+    public static T SetSelectedItem<T>(this T control, int index) where T : SelectingItemsControl
+    {
+        control.SelectedIndex = index;
+        return control;
+    }
+
     public static T OnSelectionChanged<T>(this T control, Action action) where T : SelectingItemsControl
     {
         control.SelectionChanged += (_, _) => action();

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -6,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using MsBox.Avalonia;
 
@@ -31,12 +33,13 @@ sealed class MainWindow : Window
     static Key s_lastKey;
     static TabControl s_tabControl;
     static bool _updatingUnityProjectList;
+    static ComboBox s_langaugeComboBox;
 
     public MainWindow(object data)
     {
         Instance = this;
         DataContext = data;
-        Title = "UnityHubNative.Net";
+        Title = UnityHubNativeNetApp.Config.language.TitleBar;
         if (UnityHubNativeNetApp.Config.extendToTitlebar)
             ExtendClientAreaToDecorationsHint = true;
         Content = CreateContent();
@@ -172,7 +175,7 @@ sealed class MainWindow : Window
         var ind = UnityHubUtils.UnityProjects.IndexOf(unityProject);
         if (ind == -1)
             return;
-        var replacedIndex = (ind + 1) %  UnityHubUtils.UnityProjects.Count;
+        var replacedIndex = (ind + 1) % UnityHubUtils.UnityProjects.Count;
         (UnityHubUtils.UnityProjects[ind], UnityHubUtils.UnityProjects[replacedIndex]) = (UnityHubUtils.UnityProjects[replacedIndex], UnityHubUtils.UnityProjects[ind]);
         UnityHubUtils.SaveUnityProjects();
         (s_unityProjectsParent.Items[ind], s_unityProjectsParent.Items[replacedIndex]) = (s_unityProjectsParent.Items[replacedIndex], s_unityProjectsParent.Items[ind]);
@@ -216,47 +219,47 @@ sealed class MainWindow : Window
                 new MenuItem
                 {
                     Background = Brushes.Transparent,
-                    Header = "_File"
+                    Header = UnityHubNativeNetApp.Config.language.Menu_File
                 }.AddItems
                 ([
                     new MenuItem
                     {
-                        Header = "_Create New Project",
+                        Header = UnityHubNativeNetApp.Config.language.Menu_CreateNewProject,
                         HotKey = new KeyGesture(Key.N, KeyModifiers.Control),
                         InputGesture = new KeyGesture(Key.N, KeyModifiers.Control),
                     }.OnClick(OnCreateNewProjectClicked),
                     new MenuItem
                     {
-                        Header = "_Add Existing Project",
+                        Header = UnityHubNativeNetApp.Config.language.Menu_AddExistingProject,
                         HotKey = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift),
                         InputGesture = new KeyGesture(Key.N, KeyModifiers.Control | KeyModifiers.Shift)
                     }.OnClick(OnAddExistingProjectClicked),
                     new MenuItem
                     {
-                        Header = "_Reload Data",
+                        Header = UnityHubNativeNetApp.Config.language.Menu_ReloadData,
                         HotKey = new KeyGesture(Key.R, KeyModifiers.Control),
                         InputGesture = new KeyGesture(Key.R, KeyModifiers.Control),
                     }.OnClick(ReloadEverything),
                 ]),
                 new MenuItem
                 {
-                    Header = "_Project",
+                    Header = UnityHubNativeNetApp.Config.language.Menu_Project,
                 }.AddItems
                 (CreateProjectMenuItems(() => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
                 new MenuItem
                 {
-                    Header = "_Window",
+                    Header = UnityHubNativeNetApp.Config.language.Menu_Window,
                 }.AddItems
                 ([
                     new MenuItem
                     {
-                        Header = "_Close Window",
+                        Header = UnityHubNativeNetApp.Config.language.Menu_CloseWindow,
                         HotKey = new(Key.W, KeyModifiers.Control),
                         InputGesture = new(Key.W, KeyModifiers.Control)
                     }.OnClick(static () => Instance.Close()),
                     new MenuItem
                     {
-                        Header = "_About UnityHubNative.Net",
+                        Header = UnityHubNativeNetApp.Config.language.Menu_About,
                     }.OnClick(OnAboutClicked),
                 ]),
             ]),
@@ -272,7 +275,7 @@ sealed class MainWindow : Window
             ([
                 new TabItem
                 {
-                    Header = "Projects",
+                    Header = UnityHubNativeNetApp.Config.language.Tab_Projects,
                     Content = new DockPanel
                     {
                     }.AddChildren
@@ -282,7 +285,7 @@ sealed class MainWindow : Window
                             FilterMode = AutoCompleteFilterMode.None,
                             IsTextCompletionEnabled = true,
                             AsyncPopulator = PopulateUnityProjectSearchAutoCompletion,
-                            Watermark = "Search Projects",
+                            Watermark = UnityHubNativeNetApp.Config.language.SearchProjects,
                             InnerRightContent = new Label
                             {
                                 Content = "🔍",
@@ -308,8 +311,7 @@ sealed class MainWindow : Window
                 },
                 new TabItem
                 {
-                    Header = "Unity Versions",
-                    //FontSize = 15,
+                    Header = UnityHubNativeNetApp.Config.language.Tab_UnityVersions,
                     Content = new DockPanel
                     {
                     }.AddChildren
@@ -320,7 +322,7 @@ sealed class MainWindow : Window
                         ([
                             new Label
                             {
-                                Content = "Install Search Paths",
+                                Content = UnityHubNativeNetApp.Config.language.InstallSearchPaths,
                                 HorizontalAlignment = HorizontalAlignment.Left
                             }.SetDock(Dock.Top),
                             new StackPanel
@@ -331,18 +333,18 @@ sealed class MainWindow : Window
                             ([
                                 new Button
                                 {
-                                    Content = "Add Location",
+                                    Content = UnityHubNativeNetApp.Config.language.AddLocation,
                                     HorizontalAlignment = HorizontalAlignment.Stretch,
                                     IsEnabled = true,
-                                }.SetTooltip("Adds a new Unity search path")
+                                }.SetTooltip(UnityHubNativeNetApp.Config.language.AddsANewUnitySearchPath)
                                 .OnClick(AddNewUnitySearchPath),
                                 s_unityInstallationSearchRemoveBtn = new Button
                                 {
-                                    Content = "Remove\nLocation",
+                                    Content = UnityHubNativeNetApp.Config.language.RemoveLocation,
                                     HorizontalAlignment = HorizontalAlignment.Stretch,
                                     HorizontalContentAlignment = HorizontalAlignment.Center,
                                     IsEnabled = false
-                                }.SetTooltip("Removes the selected Unity search path item")
+                                }.SetTooltip(UnityHubNativeNetApp.Config.language.RemovesTheSelectedUnitySearchPathItem)
                                 .OnClick(RemoveSelectedUnitySearchPath)
                             ]),
                             new DockPanel
@@ -359,7 +361,7 @@ sealed class MainWindow : Window
                         ]),
                         new Label
                         {
-                            Content = "Detected Installations",
+                            Content = UnityHubNativeNetApp.Config.language.DetectedInstallations,
                         }.SetDock(Dock.Top),
                         new StackPanel
                         {
@@ -370,15 +372,15 @@ sealed class MainWindow : Window
                         ([
                             new Button
                             {
-                                Content = "Install New",
+                                Content = UnityHubNativeNetApp.Config.language.InstallNew,
                                 HorizontalAlignment = HorizontalAlignment.Stretch
-                            }.SetTooltip($"Install a new Unity Editor version\n{InstallUnityUrl}")
+                            }.SetTooltip($"{UnityHubNativeNetApp.Config.language.InstallANewUnityEditorVersion}\n{InstallUnityUrl}")
                             .OnClick(() => UrlUtils.OpenUrl(InstallUnityUrl)),
                             new Button
                             {
-                                Content = "Reload",
+                                Content = UnityHubNativeNetApp.Config.language.Reload,
                                 HorizontalAlignment = HorizontalAlignment.Stretch
-                            }.SetTooltip("Reload the list")
+                            }.SetTooltip(UnityHubNativeNetApp.Config.language.ReloadTheList)
                             .OnClick(UnityHubUtils.LoadUnityInstallations, UpdateUnityVersionViews),
                         ]),
                         new DockPanel
@@ -398,7 +400,7 @@ sealed class MainWindow : Window
                 },
                 new TabItem
                 {
-                    Header = "Options",
+                    Header = UnityHubNativeNetApp.Config.language.Tab_Options,
                     Content = new ScrollViewer
                     {
                         IsScrollInertiaEnabled = true,
@@ -418,9 +420,9 @@ sealed class MainWindow : Window
                                 ([
                                     new TextBlock
                                     {
-                                        Text = "Appearance",
+                                        Text = UnityHubNativeNetApp.Config.language.Appearance,
                                         VerticalAlignment = VerticalAlignment.Center,
-                                    }.SetTooltip("Control the appearence of the app. Can affect performance.").SetDock(Dock.Left)
+                                    }.SetTooltip(UnityHubNativeNetApp.Config.language.ControlTheAppearenceOfTheAppCanAffectPerformance).SetDock(Dock.Left)
                                 ]),
                             }.SetTooltip("")
                             .SetDock(Dock.Top)
@@ -435,7 +437,28 @@ sealed class MainWindow : Window
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Transparent Window",
+                                            Text = UnityHubNativeNetApp.Config.language.LanguageName,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetDock(Dock.Left),
+                                        s_langaugeComboBox = new ComboBox
+                                        {
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.AddItems(ILocalization.AllLocalizations.Select(localization => new ComboBoxItem
+                                        {
+                                            Content = localization.LanguageName
+                                        }).ToArray()).SetSelectedItem(ILocalization.AllLocalizations.IndexOf(UnityHubNativeNetApp.Config.language)).OnSelectionChanged(OnLanguageChanged).SetDock(Dock.Right),
+                                    ]).SetTooltip(UnityHubNativeNetApp.Config.language.MakesTheWindowTransparentUsesMicaOnWindowsAndTheDesktopsBlurOnLinuxNeedsRestartToTakeEffect),
+                                },
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = UnityHubNativeNetApp.Config.language.TransparentWindow,
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.SetDock(Dock.Left),
                                         new CheckBox
@@ -443,7 +466,7 @@ sealed class MainWindow : Window
                                             IsChecked = UnityHubNativeNetApp.Config.transparent,
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.OnCheckChanged(OnTransparencyCheckboxChanged).SetDock(Dock.Right),
-                                    ]).SetTooltip("Makes the window transparent. Uses Mica on Windows and the desktop's blur on Linux.\nNeeds restart to take effect."),
+                                    ]).SetTooltip(UnityHubNativeNetApp.Config.language.MakesTheWindowTransparentUsesMicaOnWindowsAndTheDesktopsBlurOnLinuxNeedsRestartToTakeEffect),
                                 },
                                 new SettingsExpanderItem
                                 {
@@ -460,9 +483,9 @@ sealed class MainWindow : Window
                                         ([
                                             new TextBlock
                                             {
-                                                Text = "Acrilyc",
+                                                Text = UnityHubNativeNetApp.Config.language.Acrilyc,
                                                 VerticalAlignment = VerticalAlignment.Center,
-                                            }.SetTooltip("Use Acrylic blur. Only works on Windows.\nNeeds restart to take effect.").SetDock(Dock.Left),
+                                            }.SetTooltip(UnityHubNativeNetApp.Config.language.UseAcrylicBlurOnlyWorksOnWindowsNeedsRestartToTakeEffect).SetDock(Dock.Left),
                                             new CheckBox
                                             {
                                                 IsChecked = UnityHubNativeNetApp.Config.acrylic,
@@ -481,9 +504,9 @@ sealed class MainWindow : Window
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Background Blur Intensity",
+                                            Text = UnityHubNativeNetApp.Config.language.BackgroundBlurIntensity,
                                             VerticalAlignment = VerticalAlignment.Center,
-                                        }.SetTooltip("Changes the intensity of the background blur.").SetDock(Dock.Left),
+                                        }.SetTooltip(UnityHubNativeNetApp.Config.language.ChangesTheIntensityOfTheBackgroundBlur).SetDock(Dock.Left),
                                         s_backgroundBlurIntensitySlider = new Slider
                                         {
                                             VerticalAlignment = VerticalAlignment.Center,
@@ -506,9 +529,9 @@ sealed class MainWindow : Window
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Extend to Titlebar",
+                                            Text = UnityHubNativeNetApp.Config.language.ExtendToTitlebar,
                                             VerticalAlignment = VerticalAlignment.Center,
-                                        }.SetTooltip("Extends the client area to the titlebar.").SetDock(Dock.Left),
+                                        }.SetTooltip(UnityHubNativeNetApp.Config.language.ExtendsTheClientAreaToTheTitlebar).SetDock(Dock.Left),
                                         new CheckBox
                                         {
                                             IsChecked = UnityHubNativeNetApp.Config.extendToTitlebar
@@ -525,7 +548,7 @@ sealed class MainWindow : Window
                                 ([
                                     new TextBlock
                                     {
-                                        Text = "Behaviour",
+                                        Text = UnityHubNativeNetApp.Config.language.Behaviour,
                                         VerticalAlignment = VerticalAlignment.Center,
                                     }.SetDock(Dock.Left)
                                 ]),
@@ -540,7 +563,7 @@ sealed class MainWindow : Window
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Close after opening a project",
+                                            Text = UnityHubNativeNetApp.Config.language.CloseAfterOpeningAProject,
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.SetDock(Dock.Left),
                                         new CheckBox
@@ -549,7 +572,7 @@ sealed class MainWindow : Window
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.OnCheckChanged(OnCloseAfterOpenProjectCheckboxChanged).SetDock(Dock.Right)
                                     ])
-                                }.SetTooltip("If checked, the app will close after opening a project"),
+                                }.SetTooltip(UnityHubNativeNetApp.Config.language.IfCheckedTheAppWillCloseAfterOpeningAProject),
                                 new SettingsExpanderItem
                                 {
                                     Content = new DockPanel
@@ -563,7 +586,7 @@ sealed class MainWindow : Window
                                         ([
                                             new TextBlock
                                             {
-                                                Text = "Format to open project in Terminal",
+                                                Text = UnityHubNativeNetApp.Config.language.FormatToOpenProjectInTerminal,
                                                 VerticalAlignment = VerticalAlignment.Center,
                                                 Margin = new(0, 0, 10, 0),
                                             }.SetDock(Dock.Left),
@@ -580,7 +603,7 @@ sealed class MainWindow : Window
                                         ([
                                             new TextBlock
                                             {
-                                                Text = "Close after open in terminal",
+                                                Text = UnityHubNativeNetApp.Config.language.CloseAfterOpenInTerminal,
                                                 VerticalAlignment = VerticalAlignment.Center,
                                                 Margin = new(0, 0, 10, 0),
                                             }.SetDock(Dock.Left),
@@ -589,9 +612,9 @@ sealed class MainWindow : Window
                                                 IsChecked = UnityHubNativeNetApp.Config.closeAfterOpenInTerminal,
                                                 VerticalAlignment = VerticalAlignment.Center,
                                             }.OnCheckChanged(OnCloseAfterOpenInTerminalChanged).SetDock(Dock.Right)
-                                        ]).SetDock(Dock.Top).SetTooltip("Whether or not to close the app after opening project in terminal"),
+                                        ]).SetDock(Dock.Top).SetTooltip(UnityHubNativeNetApp.Config.language.WhetherOrNotToCloseTheAppAfterOpeningProjectInTerminal),
                                     ])
-                                }.SetTooltip("Defines the process format of when opening a project in terminal. {path} will be replaced by the project path"),
+                                }.SetTooltip(UnityHubNativeNetApp.Config.language.DefinesTheProcessFormatOfWhenOpeningAProjectInTerminalPathWillBeReplacedByTheProjectPath),
                                 new SettingsExpanderItem
                                 {
                                     Content = new DockPanel
@@ -601,7 +624,7 @@ sealed class MainWindow : Window
                                     ([
                                         new TextBlock
                                         {
-                                            Text = "Remember Unity Project selection",
+                                            Text = UnityHubNativeNetApp.Config.language.RememberUnityProjectSelection,
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.SetDock(Dock.Left),
                                         new CheckBox
@@ -610,7 +633,7 @@ sealed class MainWindow : Window
                                             VerticalAlignment = VerticalAlignment.Center,
                                         }.OnCheckChanged(OnRememberProjectSelectionChanged).SetDock(Dock.Right)
                                     ])
-                                }.SetTooltip("If checked, the last selected Unity Project will be kept across sessions"),
+                                }.SetTooltip(UnityHubNativeNetApp.Config.language.IfCheckedTheLastSelectedUnityProjectWillBeKeptAcrossSessions),
                             ])
                         ])
                     }
@@ -618,6 +641,17 @@ sealed class MainWindow : Window
             ])
         ])
     ]);
+
+    static void OnLanguageChanged()
+    {
+        UnityHubNativeNetApp.Config.language = ILocalization.AllLocalizations[s_langaugeComboBox.SelectedIndex];
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+        var old = Instance;
+        new MainWindow(null).Show();
+        Instance.Position = old.Position;
+        Instance.ClientSize = old.ClientSize;
+        old.Close();
+    }
 
     static void OnRememberProjectSelectionChanged()
     {
@@ -652,45 +686,44 @@ sealed class MainWindow : Window
         [
             new MenuItem
             {
-                Header = "Open",
-                //HotKey = new(Key.Enter),
+                Header = UnityHubNativeNetApp.Config.language.Menu_Open,
                 InputGesture = new(Key.Enter),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter()?.unity.HasValue == true)
             .OnClick(OpenSelectedProject),
             new MenuItem
             {
-                Header = "Open With",
+                Header = UnityHubNativeNetApp.Config.language.Menu_OpenWith,
                 HotKey = new(Key.Enter, KeyModifiers.Alt),
                 InputGesture = new(Key.Enter, KeyModifiers.Alt),
             }.OnClick(OpenSelectedProjectWith),
             new MenuItem
             {
-                Header = "Open In Terminal",
+                Header = UnityHubNativeNetApp.Config.language.Menu_OpenInTerminal,
                 HotKey = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
                 InputGesture = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
             }.OnClick(OpenSelectedProjectInTerminal),
             new MenuItem
             {
-                Header = "R_emove From List",
+                Header = UnityHubNativeNetApp.Config.language.Menu_RemoveFromList,
                 HotKey = new(Key.Delete),
                 InputGesture = new(Key.Delete)
             }.OnClick(OnRemoveProjectFromListClicked),
             new MenuItem
             {
-                Header = "_Reveal In File Explorer",
+                Header = UnityHubNativeNetApp.Config.language.Menu_RevealInFileExplorer,
                 HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
                 InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
             }.OnClick(RevealSelectedProject),
             new MenuItem
             {
-                Header = "Move Up In List",
+                Header = UnityHubNativeNetApp.Config.language.Menu_MoveUpInList,
                 HotKey = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
                 InputGesture = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.Skip(1).Contains(unityProjectGetter()))
             .OnClick(MoveSelectedProjectUp),
             new MenuItem
             {
-                Header = "Move Down In List",
+                Header = UnityHubNativeNetApp.Config.language.Menu_MoveDownInList,
                 HotKey = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
                 InputGesture = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.SkipLast(1).Contains(unityProjectGetter()))
@@ -791,7 +824,7 @@ sealed class MainWindow : Window
             var paths = await Instance.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = true,
-                Title = "Pick Folder to search for Unity Installations"
+                Title = UnityHubNativeNetApp.Config.language.PickFolderToSearchForUnityInstallations
             });
             bool dirty = false;
             foreach (var path in paths)
@@ -816,7 +849,7 @@ sealed class MainWindow : Window
         catch (Exception ex)
         {
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
-            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
+            _ = MessageBoxManager.GetMessageBoxStandard(UnityHubNativeNetApp.Config.language.Error, ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
         }
     }
 
@@ -848,7 +881,7 @@ sealed class MainWindow : Window
             var paths = await Instance.StorageProvider.OpenFolderPickerAsync(new()
             {
                 AllowMultiple = true,
-                Title = "Select the folder(s) containing the Unity Project"
+                Title = UnityHubNativeNetApp.Config.language.SelectTheFoldersContainingTheUnityProject
             });
             foreach (var path in paths)
             {
@@ -859,7 +892,7 @@ sealed class MainWindow : Window
                     continue;
                 if (UnityHubUtils.UnityProjects.Any(p => p.path == folder))
                 {
-                    _ = MessageBoxManager.GetMessageBoxStandard($"Project \"{folder}\" has already been added.", "Cannot add project", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info).ShowWindowDialogAsync(Instance);
+                    _ = MessageBoxManager.GetMessageBoxStandard(string.Format(UnityHubNativeNetApp.Config.language.ProjectHasAlreadyBeenAdded, folder), UnityHubNativeNetApp.Config.language.CannotAddProject, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Info).ShowWindowDialogAsync(Instance);
                     continue;
                 }
                 bool dirty = false;
@@ -878,7 +911,7 @@ sealed class MainWindow : Window
         }
         catch (Exception ex)
         {
-            _ = MessageBoxManager.GetMessageBoxStandard("Error", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
+            _ = MessageBoxManager.GetMessageBoxStandard(UnityHubNativeNetApp.Config.language.Error, ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowWindowDialogAsync(Instance);
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
         }
     }

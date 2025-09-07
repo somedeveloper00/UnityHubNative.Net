@@ -44,7 +44,7 @@ sealed class AboutDialogue : Window
         ([
             new TextBlock
             {
-                Text = "Unity Hub Native .Net " + Manifest.Version,
+                Text = UnityHubNativeNetApp.Config.language.TitleBar + " " + Manifest.Version,
                 FontSize = 25,
                 HorizontalAlignment = HorizontalAlignment.Center,
             }.SetDock(Dock.Top),
@@ -55,12 +55,12 @@ sealed class AboutDialogue : Window
             }.SetDock(Dock.Top),
             new TextBlock
             {
-                Text = "Developed with Avalonia and inspired by UnityHubNative",
+                Text = UnityHubNativeNetApp.Config.language.About_1,
                 HorizontalAlignment = HorizontalAlignment.Center
             }.SetDock(Dock.Top),
             _btn = new Button
             {
-                Content = "Close",
+                Content = UnityHubNativeNetApp.Config.language.Close,
                 HotKey = new(Key.Escape),
                 HorizontalAlignment = HorizontalAlignment.Center
             }.OnClick(Close)
