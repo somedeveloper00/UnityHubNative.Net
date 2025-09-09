@@ -23,8 +23,6 @@ sealed class SubmitableListBox : ListBox
 
     protected override Type StyleKeyOverride => typeof(ListBox);
 
-    private bool _firstTime = true;
-
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);

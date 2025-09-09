@@ -98,6 +98,20 @@ sealed class MainWindow : Window
         }
     }
 
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (e.Key == Key.LeftShift)
+        {
+            if (s_unityProjectsParent.SelectedItem != null)
+            {
+                s_unityProjectsParent.ContainerFromIndex(GetUnityProjectSelectedIndex())!.Focus();
+                s_projectSearchBoxAutoComplete.Text = string.Empty;
+            }
+            return;
+        }
+    }
+
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
@@ -184,6 +198,7 @@ sealed class MainWindow : Window
         s_unityProjectsParent.SelectedIndex = targetIndex;
         for (int i = 0; i < s_unityProjectsParent.Items.Count; i++)
             ((UnityProjectView)s_unityProjectsParent.Items[i]).Update(UnityHubUtils.UnityProjects[i]);
+        s_unityProjectsParent.SetSelectedItem(targetIndex);
     }
 
     public static void MoveSelectedProjectUp()
@@ -202,6 +217,7 @@ sealed class MainWindow : Window
         s_unityProjectsParent.SelectedIndex = targetIndex;
         for (int i = 0; i < s_unityProjectsParent.Items.Count; i++)
             ((UnityProjectView)s_unityProjectsParent.Items[i]).Update(UnityHubUtils.UnityProjects[i]);
+        s_unityProjectsParent.SetSelectedItem(targetIndex);
     }
 
     static Control CreateContent() => new DockPanel
@@ -721,15 +737,15 @@ sealed class MainWindow : Window
             new MenuItem
             {
                 Header = UnityHubNativeNetApp.Config.language.Menu_MoveUpInList,
-                HotKey = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
-                InputGesture = new(Key.Up, KeyModifiers.Alt | KeyModifiers.Shift),
+                HotKey = new(Key.Up, KeyModifiers.Shift),
+                InputGesture = new(Key.Up, KeyModifiers.Shift),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.Skip(1).Contains(unityProjectGetter()))
             .OnClick(MoveSelectedProjectUp),
             new MenuItem
             {
                 Header = UnityHubNativeNetApp.Config.language.Menu_MoveDownInList,
-                HotKey = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
-                InputGesture = new(Key.Down, KeyModifiers.Alt | KeyModifiers.Shift),
+                HotKey = new(Key.Down, KeyModifiers.Shift),
+                InputGesture = new(Key.Down, KeyModifiers.Shift),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter is not null && UnityHubUtils.UnityProjects.SkipLast(1).Contains(unityProjectGetter()))
             .OnClick(MoveSelectedProjectDown),
         ];
