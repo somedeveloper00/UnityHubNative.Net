@@ -238,7 +238,7 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
 
     public override string ToString() => $"{{\"{path}\", \"{name}\", {unity}}}";
 
-    public override bool Equals(object? obj) => obj is UnityProject project && project.path == path;
+    public override bool Equals(object obj) => obj is UnityProject project && project.path == path;
 
     public static bool TryLoadUnityProject(string path, out UnityProject result)
     {
@@ -293,6 +293,7 @@ class UnityProject(string path, DateTime lastModifiedDate, UnityInstallation? un
             MainWindow.Instance.Close();
     }
 
+    public override int GetHashCode() => path.GetHashCode();
 }
 
 public enum UnityPlatform

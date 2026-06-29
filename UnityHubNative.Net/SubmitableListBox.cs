@@ -14,7 +14,7 @@ sealed class SubmitableListBox : ListBox
     /// <summary>
     /// Gets invoked when submitted on
     /// </summary>
-    public event Action? OnSubmit;
+    public event Action OnSubmit;
 
     /// <summary>
     /// List of acceptable <see cref="KeyGesture"/> to invoke <see cref="OnSubmit"/>

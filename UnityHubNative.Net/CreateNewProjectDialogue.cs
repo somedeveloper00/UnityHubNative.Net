@@ -54,7 +54,7 @@ sealed class CreateNewProjectDialogue : Window
         _nameTextBox.Focus();
     }
 
-    object? CreateContent()
+    DockPanel CreateContent()
     {
         return new DockPanel
         {

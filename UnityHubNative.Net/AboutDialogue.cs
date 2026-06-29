@@ -35,7 +35,7 @@ sealed class AboutDialogue : Window
         _btn.Focus();
     }
 
-    private object? CreateContent()
+    private DockPanel CreateContent()
     {
         return new DockPanel
         {

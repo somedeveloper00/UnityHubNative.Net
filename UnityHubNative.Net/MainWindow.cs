@@ -783,7 +783,7 @@ sealed class MainWindow : Window
         s_transparentPanel.IsEnabled = UnityHubNativeNetApp.Config.transparent;
     }
 
-    static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string? filter, CancellationToken _)
+    static Task<IEnumerable<object>> PopulateUnityProjectSearchAutoCompletion(string filter, CancellationToken _)
     {
         if (filter == null)
         {

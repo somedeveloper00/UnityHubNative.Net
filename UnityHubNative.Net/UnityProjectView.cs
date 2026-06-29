@@ -82,10 +82,11 @@ internal sealed class UnityProjectView : Panel
         }
         unityProject.OpenProject();
 
-        void DropDownClosed(object? sender, EventArgs e)
+        void DropDownClosed(object sender, EventArgs e)
         {
             _unityVersionComboBox.DropDownClosed -= DropDownClosed;
-            OpenProject();
+            if (unityProject.unity.HasValue)
+                OpenProject();
         }
     }
 
