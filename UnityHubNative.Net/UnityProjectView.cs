@@ -25,8 +25,7 @@ internal sealed class UnityProjectView : Panel
                 Background = Brushes.Transparent,
                 ContextFlyout = new MenuFlyout
                 {
-                }.AddItems
-                (MainWindow.CreateProjectMenuItems(() => unityProject)),
+                }.AddItems(MainWindow.CreateProjectMenuItems(() => unityProject)),
                 ClipToBounds = false,
                 Child = new DockPanel
                 {
@@ -35,11 +34,12 @@ internal sealed class UnityProjectView : Panel
                 ([
                     _unityVersionComboBox = new ComboBox
                     {
-                         ItemsSource = GetInstallationsEnum(),
-                         Margin = new(5, 0, 0, 0),
-                         MinWidth = 120,
-                         VerticalAlignment = VerticalAlignment.Center,
-                         WrapSelection = true
+                        FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
+                        ItemsSource = GetInstallationsEnum(),
+                        Margin = new(5, 0, 0, 0),
+                        MinWidth = 120,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        WrapSelection = true
                     }.OnSelectionChanged(OnUnityVersionChanged).SetDock(Dock.Right),
                     new HyperlinkButton
                     {
@@ -48,6 +48,7 @@ internal sealed class UnityProjectView : Panel
                         HorizontalAlignment = HorizontalAlignment.Right,
                         Content = _pathTextBlock = new TextBlock
                         {
+                            FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                             FontWeight = FontWeight.Thin,
                             FontStyle = FontStyle.Italic,
                             FontSize = 11,
@@ -56,6 +57,7 @@ internal sealed class UnityProjectView : Panel
                     }.OnClick(OnPathLinkClicked).SetDock(Dock.Right),
                     _titleTextBlock = new TextBlock
                     {
+                        FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                         FontWeight = FontWeight.SemiBold,
                         FontSize = 15,
                         Margin = new(5, 0, 0, 0),
@@ -108,7 +110,7 @@ internal sealed class UnityProjectView : Panel
     {
         yield return "?";
         for (int i = 0; i < UnityHubUtils.UnityInstallations.Count; i++)
-            yield return UnityHubUtils.UnityInstallations[i].version;
+                yield return UnityHubUtils.UnityInstallations[i].version;
     }
 
     void OnUnityVersionChanged()

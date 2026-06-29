@@ -37,6 +37,8 @@ class LocalizationEnglish : ILocalization
     public string BackgroundBlurIntensity => "Background Blur Intensity";
     public string ChangesTheIntensityOfTheBackgroundBlur => "Changes the intensity of the background blur.";
     public string ExtendToTitlebar => "Extend to Titlebar";
+    public string Font => "Font";
+    public string Font_Tooltip => "Changes the application font family.";
     public string ExtendsTheClientAreaToTheTitlebar => "Extends the client area to the titlebar.";
     public string Behaviour => "Behaviour";
     public string CloseAfterOpeningAProject => "Close after opening a project";
@@ -83,5 +85,6 @@ class LocalizationEnglish : ILocalization
     public string Platform_WebGL => "WebGL";
     public string Platform_UWP => "UWP";
     public string OpenWithSpecificEditor => "Open With Specific Editor";
+
     public string SelectEditorVerisonToOpen => "Select editor verison to open \"{0}\"";
 }

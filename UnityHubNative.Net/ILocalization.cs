@@ -59,6 +59,8 @@ public interface ILocalization
     abstract string BackgroundBlurIntensity { get; }
     abstract string ChangesTheIntensityOfTheBackgroundBlur { get; }
     abstract string ExtendToTitlebar { get; }
+    abstract string Font { get; }
+    abstract string Font_Tooltip { get; }
     abstract string ExtendsTheClientAreaToTheTitlebar { get; }
     abstract string Behaviour { get; }
     abstract string CloseAfterOpeningAProject { get; }

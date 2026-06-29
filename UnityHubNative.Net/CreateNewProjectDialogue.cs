@@ -68,12 +68,14 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Text = UnityHubNativeNetApp.Config.language.ProjectName,
                     VerticalAlignment = VerticalAlignment.Center,
                     Width = 100,
                 }.SetDock(Dock.Left),
                 _nameTextBox = new TextBox
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     MaxLines = 1,
                     VerticalAlignment = VerticalAlignment.Center,
                     Watermark = UnityHubNativeNetApp.Config.language.NewUnityProject
@@ -86,17 +88,20 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Text = UnityHubNativeNetApp.Config.language.Location,
                     Width = 100,
                     VerticalAlignment = VerticalAlignment.Center,
                 }.SetDock(Dock.Left),
                 new Button
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Content = UnityHubNativeNetApp.Config.language.Choose,
                     Margin = new(2)
                 }.OnClick(OnChooseLocationClicked).SetDock(Dock.Right),
                 _pathTextBox = new TextBox
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     MaxLines = 1,
                     VerticalAlignment = VerticalAlignment.Center,
                     Watermark = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
@@ -114,6 +119,7 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 new TextBlock
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Text = UnityHubNativeNetApp.Config.language.SelectTemplateForVersion,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new(0, 0, 5, 0),
@@ -131,6 +137,7 @@ sealed class CreateNewProjectDialogue : Window
             ([
                 _createButton = new Button
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Content = UnityHubNativeNetApp.Config.language.Create,
                     IsEnabled = false,
                     Margin = new(2),
@@ -138,6 +145,7 @@ sealed class CreateNewProjectDialogue : Window
                 }.OnClick(OnCreateClicked).SetTooltip(UnityHubNativeNetApp.Config.language.CreateTheUnityProjectWithTheSpecifiedAttributes).SetDock(Dock.Right),
                 new Button
                 {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                     Content = UnityHubNativeNetApp.Config.language.Cancel,
                     HotKey = new(Key.Escape),
                     VerticalAlignment = VerticalAlignment.Center,
@@ -146,6 +154,7 @@ sealed class CreateNewProjectDialogue : Window
             ]).SetDock(Dock.Bottom),
             _templatesParent = new ListBox
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
                 SelectedIndex = 0,
                 IsTextSearchEnabled = true
@@ -210,7 +219,13 @@ sealed class CreateNewProjectDialogue : Window
         _templatesParent.Items.Clear();
         if (TryGetSelectedUnityInstallation(out var installation))
             foreach (var path in installation.GetTemplatePaths())
-                _templatesParent.Items.Add(Path.GetFileName(path));
+            {
+                _templatesParent.Items.Add(new TextBlock
+                {
+                    FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
+                    Text = Path.GetFileName(path)
+                });
+            }
     }
 
     void UpdateCreateButtonView() => _createButton.IsEnabled = _templatesParent.Items.Count > 0 && Directory.Exists(_pathTextBox.Text) && _nameTextBox.Text?.Length > 0;

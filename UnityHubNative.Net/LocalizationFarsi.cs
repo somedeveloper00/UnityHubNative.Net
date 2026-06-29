@@ -39,6 +39,8 @@ class LocalizationFarsi : ILocalization
     public string BackgroundBlurIntensity => "شدت محو پس زمینه";
     public string ChangesTheIntensityOfTheBackgroundBlur => "شدت محو پس زمینه را تغییر می دهد";
     public string ExtendToTitlebar => "گسترش به نوار عنوان";
+    public string Font => "فونت";
+    public string Font_Tooltip => "فونت رو تغییر میدهد.";
     public string ExtendsTheClientAreaToTheTitlebar => "ناحیه کاربری به نوار عنوان گسترش می یابد";
     public string Behaviour => "رفتار";
     public string CloseAfterOpeningAProject => "بستن پس از باز کردن پروژه";

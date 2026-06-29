@@ -37,6 +37,8 @@ class LocalizationPolski : ILocalization
     public string BackgroundBlurIntensity => "Intensywność rozmycia tła";
     public string ChangesTheIntensityOfTheBackgroundBlur => "Zmienia intensywność rozmycia tła.";
     public string ExtendToTitlebar => "Rozszerz do paska tytułu";
+    public string Font => "Czcionka";
+    public string Font_Tooltip => "Zmienia rodzinę czcionek aplikacji.";
     public string ExtendsTheClientAreaToTheTitlebar => "Rozszerza obszar klienta do paska tytułu.";
     public string Behaviour => "Zachowanie";
     public string CloseAfterOpeningAProject => "Zamknij po otwarciu projektu";

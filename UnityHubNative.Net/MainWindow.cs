@@ -34,6 +34,7 @@ sealed class MainWindow : Window
     static TabControl s_tabControl;
     static bool _updatingUnityProjectList;
     static ComboBox s_langaugeComboBox;
+    static ComboBox s_fontComboBox;
 
     public MainWindow(object data)
     {
@@ -42,6 +43,11 @@ sealed class MainWindow : Window
         Title = UnityHubNativeNetApp.Config.language.TitleBar;
         if (UnityHubNativeNetApp.Config.extendToTitlebar)
             ExtendClientAreaToDecorationsHint = true;
+
+        if (!string.IsNullOrEmpty(UnityHubNativeNetApp.Config.fontFamily))
+            FontFamily = new FontFamily(UnityHubNativeNetApp.Config.fontFamily);
+        else
+            UnityHubNativeNetApp.Config.fontFamily = FontManager.Current.DefaultFontFamily.Name;
         Content = CreateContent();
         ReloadEverything();
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -220,7 +226,7 @@ sealed class MainWindow : Window
         s_unityProjectsParent.SetSelectedItem(targetIndex);
     }
 
-    static Control CreateContent() => new DockPanel
+    static DockPanel CreateContent() => new DockPanel
     {
         LastChildFill = true,
         HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -234,6 +240,7 @@ sealed class MainWindow : Window
         ([
             new Menu
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
             }.SetDock(Dock.Left).AddItems
             ([
                 new MenuItem
@@ -264,8 +271,8 @@ sealed class MainWindow : Window
                 new MenuItem
                 {
                     Header = UnityHubNativeNetApp.Config.language.Menu_Project,
-                }.AddItems
-                (CreateProjectMenuItems(() => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
+                }.AddItems(CreateProjectMenuItems(
+                    () => (s_unityProjectsParent.SelectedItem as UnityProjectView)?.unityProject ?? null)),
                 new MenuItem
                 {
                     Header = UnityHubNativeNetApp.Config.language.Menu_Window,
@@ -463,10 +470,10 @@ sealed class MainWindow : Window
                                         s_langaugeComboBox = new ComboBox
                                         {
                                             VerticalAlignment = VerticalAlignment.Center,
-                                        }.AddItems(ILocalization.AllLocalizations.Select(localization => new ComboBoxItem
+                                        }.AddItems([.. ILocalization.AllLocalizations.Select(localization => new ComboBoxItem
                                         {
                                             Content = localization.LanguageName
-                                        }).ToArray()).SetSelectedItem(ILocalization.AllLocalizations.IndexOf(UnityHubNativeNetApp.Config.language)).OnSelectionChanged(OnLanguageChanged).SetDock(Dock.Right),
+                                        })]).SetSelectedItem(ILocalization.AllLocalizations.IndexOf(UnityHubNativeNetApp.Config.language)).OnSelectionChanged(OnLanguageChanged).SetDock(Dock.Right),
                                     ]).SetTooltip(UnityHubNativeNetApp.Config.language.MakesTheWindowTransparentUsesMicaOnWindowsAndTheDesktopsBlurOnLinuxNeedsRestartToTakeEffect),
                                 },
                                 new SettingsExpanderItem
@@ -557,7 +564,32 @@ sealed class MainWindow : Window
                                             IsChecked = UnityHubNativeNetApp.Config.extendToTitlebar
                                         }.OnCheckChanged(OnExtendToTitlebarCheckChanged).SetDock(Dock.Right)
                                     ]).SetDock(Dock.Top)
-                                }
+                                },
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = UnityHubNativeNetApp.Config.language.Font,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetDock(Dock.Left),
+                                        s_fontComboBox = new ComboBox
+                                        {
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                            Width = 200,
+                                        }.AddItems([.. FontManager.Current.SystemFonts.Select(f => new ComboBoxItem
+                                        {
+                                            Content = f.Name,
+                                            FontFamily = f
+                                        })])
+                                        .SetSelectedItem(Math.Max(0, Array.IndexOf([.. FontManager.Current.SystemFonts.Select(f => f.Name)], UnityHubNativeNetApp.Config.fontFamily)))
+                                        .OnSelectionChanged(OnFontChanged).SetDock(Dock.Right),
+                                    ]).SetTooltip(UnityHubNativeNetApp.Config.language.Font_Tooltip),
+                                },
                             ]),
                             new SettingsExpander
                             {
@@ -662,6 +694,20 @@ sealed class MainWindow : Window
         ])
     ]);
 
+    static void OnFontChanged()
+    {
+        if (s_fontComboBox.SelectedItem is ComboBoxItem item && item.Content is string fontName)
+        {
+            UnityHubNativeNetApp.Config.fontFamily = fontName;
+            UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+            var old = Instance;
+            new MainWindow(null).Show();
+            Instance.Position = old.Position;
+            Instance.ClientSize = old.ClientSize;
+            old.Close();
+        }
+    }
+
     static void OnLanguageChanged()
     {
         UnityHubNativeNetApp.Config.language = ILocalization.AllLocalizations[s_langaugeComboBox.SelectedIndex];
@@ -706,36 +752,42 @@ sealed class MainWindow : Window
         [
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_Open,
                 InputGesture = new(Key.Enter),
             }.OnLayoutUpdate((item) => item.IsEnabled = unityProjectGetter()?.unity.HasValue == true)
             .OnClick(OpenSelectedProject),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_OpenWith,
                 HotKey = new(Key.Enter, KeyModifiers.Alt),
                 InputGesture = new(Key.Enter, KeyModifiers.Alt),
             }.OnClick(OpenSelectedProjectWith),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_OpenInTerminal,
                 HotKey = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
                 InputGesture = new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift),
             }.OnClick(OpenSelectedProjectInTerminal),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_RemoveFromList,
                 HotKey = new(Key.Delete),
                 InputGesture = new(Key.Delete)
             }.OnClick(OnRemoveProjectFromListClicked),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_RevealInFileExplorer,
                 HotKey = new KeyGesture(Key.F, KeyModifiers.Control),
                 InputGesture = new KeyGesture(Key.F, KeyModifiers.Control),
             }.OnClick(RevealSelectedProject),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_MoveUpInList,
                 HotKey = new(Key.Up, KeyModifiers.Shift),
                 InputGesture = new(Key.Up, KeyModifiers.Shift),
@@ -743,6 +795,7 @@ sealed class MainWindow : Window
             .OnClick(MoveSelectedProjectUp),
             new MenuItem
             {
+                FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
                 Header = UnityHubNativeNetApp.Config.language.Menu_MoveDownInList,
                 HotKey = new(Key.Down, KeyModifiers.Shift),
                 InputGesture = new(Key.Down, KeyModifiers.Shift),

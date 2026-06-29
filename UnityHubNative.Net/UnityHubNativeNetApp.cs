@@ -29,7 +29,9 @@ public sealed class UnityHubNativeNetApp : Application
     public override void Initialize()
     {
         RequestedThemeVariant = ThemeVariant.Default;
-        Styles.Add(new FluentAvaloniaTheme() { });
+        Styles.Add(new FluentAvaloniaTheme()
+        {
+        });
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -56,7 +58,12 @@ public sealed class UnityHubNativeNetApp : Application
                 openInTerminalFormat = txt.Length >= 6 ? txt[5] : "cmd.exe /K cd /d \"{path}\"",
                 closeAfterOpenInTerminal = txt.Length >= 7 && txt[6] == "true",
                 saveProjectSelection = txt.Length >= 8 && txt[7] == "true",
-                language = txt.Length >= 9 && ILocalization.TryGetFromCode(txt[8], out var localization) ? localization : ILocalization.TryGetFromCode(CultureInfo.CurrentCulture.TwoLetterISOLanguageName, out localization) ? localization : ILocalization.AllLocalizations[0]
+                language = txt.Length >= 9 && ILocalization.TryGetFromCode(txt[8], out var localization) 
+                    ? localization 
+                    : ILocalization.TryGetFromCode(CultureInfo.CurrentCulture.TwoLetterISOLanguageName, out localization) 
+                        ? localization 
+                        : ILocalization.AllLocalizations[0],
+                fontFamily = txt.Length >= 10 ? txt[9] : null
             };
         }
         catch (Exception ex)
@@ -78,7 +85,8 @@ public sealed class UnityHubNativeNetApp : Application
             config.openInTerminalFormat,
             config.closeAfterOpenInTerminal ? "true" : "false",
             config.saveProjectSelection ? "true" : "false",
-            config.language.LanguageCode
+            config.language.LanguageCode,
+            config.fontFamily
         ]);
     }
 
@@ -93,5 +101,6 @@ public sealed class UnityHubNativeNetApp : Application
         public bool closeAfterOpenInTerminal;
         public bool saveProjectSelection;
         public ILocalization language;
+        public string fontFamily;
     }
 }
