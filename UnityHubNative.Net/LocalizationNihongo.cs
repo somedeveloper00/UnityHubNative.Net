@@ -39,9 +39,11 @@ class LocalizationNihongo : ILocalization
     public string BackgroundBlurIntensity => "背景ぼかしの強さ";
     public string ChangesTheIntensityOfTheBackgroundBlur => "背景ぼかしの強さを変更します";
     public string ExtendToTitlebar => "タイトルバーまで拡張";
+    public string ProjectTitleBold => "プロジェクトタイトルを太字にする";
+    public string ProjectTitleBold_Tooltip => "オンの場合、プロジェクトタイトルが太字で表示されます。";
     public string Font => "フォント";
     public string Font_Tooltip => "アプリのフォントを変更する。";
-    public string ExtendsTheClientAreaToTheTitlebar => "クライアント領域をタイトルバーまで拡張します";
+    public string ExtendsTheClientAreaToTheTitlebar => "クライアント領域をタイトルバーまで拡張します。";
     public string Behaviour => "動作";
     public string CloseAfterOpeningAProject => "プロジェクトを開いた後に終了";
     public string IfCheckedTheAppWillCloseAfterOpeningAProject =>

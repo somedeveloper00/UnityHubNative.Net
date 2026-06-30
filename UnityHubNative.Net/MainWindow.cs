@@ -590,6 +590,24 @@ sealed class MainWindow : Window
                                         .OnSelectionChanged(OnFontChanged).SetDock(Dock.Right),
                                     ]).SetTooltip(UnityHubNativeNetApp.Config.language.Font_Tooltip),
                                 },
+                                new SettingsExpanderItem
+                                {
+                                    Content = new DockPanel
+                                    {
+                                        LastChildFill = false,
+                                    }.AddChildren
+                                    ([
+                                        new TextBlock
+                                        {
+                                            Text = UnityHubNativeNetApp.Config.language.ProjectTitleBold,
+                                            VerticalAlignment = VerticalAlignment.Center,
+                                        }.SetTooltip(UnityHubNativeNetApp.Config.language.ProjectTitleBold_Tooltip).SetDock(Dock.Left),
+                                        new CheckBox
+                                        {
+                                            IsChecked = UnityHubNativeNetApp.Config.projectTitleBold
+                                        }.OnCheckChanged(OnProjectTitleBoldCheckChanged).SetDock(Dock.Right)
+                                    ]).SetDock(Dock.Top)
+                                },
                             ]),
                             new SettingsExpander
                             {
@@ -743,6 +761,13 @@ sealed class MainWindow : Window
     {
         UnityHubNativeNetApp.Config.extendToTitlebar = !UnityHubNativeNetApp.Config.extendToTitlebar;
         Instance.ExtendClientAreaToDecorationsHint = UnityHubNativeNetApp.Config.extendToTitlebar;
+        UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
+    }
+
+    private static void OnProjectTitleBoldCheckChanged()
+    {
+        UnityHubNativeNetApp.Config.projectTitleBold = !UnityHubNativeNetApp.Config.projectTitleBold;
+        UnityProjectView.onProjectTitleBoldConfigChanged?.Invoke();
         UnityHubNativeNetApp.SaveConfig(UnityHubNativeNetApp.Config);
     }
 

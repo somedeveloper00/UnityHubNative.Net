@@ -63,7 +63,8 @@ public sealed class UnityHubNativeNetApp : Application
                     : ILocalization.TryGetFromCode(CultureInfo.CurrentCulture.TwoLetterISOLanguageName, out localization) 
                         ? localization 
                         : ILocalization.AllLocalizations[0],
-                fontFamily = txt.Length >= 10 ? txt[9] : null
+                fontFamily = txt.Length >= 10 ? txt[9] : null,
+                projectTitleBold = txt.Length >= 11 ? txt[10] == "true" : true,
             };
         }
         catch (Exception ex)
@@ -86,7 +87,8 @@ public sealed class UnityHubNativeNetApp : Application
             config.closeAfterOpenInTerminal ? "true" : "false",
             config.saveProjectSelection ? "true" : "false",
             config.language.LanguageCode,
-            config.fontFamily
+            config.fontFamily,
+            config.projectTitleBold ? "true" : "false"
         ]);
     }
 
@@ -102,5 +104,6 @@ public sealed class UnityHubNativeNetApp : Application
         public bool saveProjectSelection;
         public ILocalization language;
         public string fontFamily;
+        public bool projectTitleBold;
     }
 }

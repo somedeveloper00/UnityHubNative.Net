@@ -39,6 +39,8 @@ class LocalizationArabic : ILocalization
     public string BackgroundBlurIntensity => "شدة تشويش الخلفية";
     public string ChangesTheIntensityOfTheBackgroundBlur => "يغير شدة تشويش الخلفية";
     public string ExtendToTitlebar => "تمديد إلى شريط العنوان";
+    public string ProjectTitleBold => "اجعل عنوان المشروع بخط عريض";
+    public string ProjectTitleBold_Tooltip => "إذا كان الخيار مفعّلًا، فسيظهر عنوان المشروع بخط عريض";
     public string Font => "خط";
     public string Font_Tooltip => "تغيير عائلة خط التطبيق.";
     public string ExtendsTheClientAreaToTheTitlebar => "تمديد منطقة العميل إلى شريط العنوان";

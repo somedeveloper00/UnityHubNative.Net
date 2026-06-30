@@ -37,6 +37,8 @@ class LocalizationEnglish : ILocalization
     public string BackgroundBlurIntensity => "Background Blur Intensity";
     public string ChangesTheIntensityOfTheBackgroundBlur => "Changes the intensity of the background blur.";
     public string ExtendToTitlebar => "Extend to Titlebar";
+    public string ProjectTitleBold => "Make project title bold";
+    public string ProjectTitleBold_Tooltip => "If ON, the project title font will be bold";
     public string Font => "Font";
     public string Font_Tooltip => "Changes the application font family.";
     public string ExtendsTheClientAreaToTheTitlebar => "Extends the client area to the titlebar.";

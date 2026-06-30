@@ -12,6 +12,8 @@ internal sealed class UnityProjectView : Panel
     readonly TextBlock _titleTextBlock;
     readonly TextBlock _pathTextBlock;
 
+    public static Action onProjectTitleBoldConfigChanged;
+
     public UnityProjectView(UnityProject unityProject) : this() => Update(unityProject);
 
     public UnityProjectView() : base()
@@ -58,7 +60,7 @@ internal sealed class UnityProjectView : Panel
                     _titleTextBlock = new TextBlock
                     {
                         FontFamily = FontFamily.Parse(UnityHubNativeNetApp.Config.fontFamily),
-                        FontWeight = FontWeight.SemiBold,
+                        FontWeight = UnityHubNativeNetApp.Config.projectTitleBold ? FontWeight.SemiBold : FontWeight.Normal,
                         FontSize = 15,
                         Margin = new(5, 0, 0, 0),
                         VerticalAlignment = VerticalAlignment.Center,
@@ -66,6 +68,11 @@ internal sealed class UnityProjectView : Panel
                 ])
             }
         ]);
+        onProjectTitleBoldConfigChanged += () =>
+        {
+            if (this != null && _titleTextBlock != null)
+                _titleTextBlock.FontWeight = UnityHubNativeNetApp.Config.projectTitleBold ? FontWeight.SemiBold : FontWeight.Normal;
+        };
         ActualThemeVariantChanged += (_, _) => UpdateUnityVersionWarning();
     }
 
@@ -92,7 +99,6 @@ internal sealed class UnityProjectView : Panel
         }
     }
 
-
     public override string ToString() => unityProject?.name ?? string.Empty;
 
     public void Update(UnityProject unityProject)
@@ -110,7 +116,7 @@ internal sealed class UnityProjectView : Panel
     {
         yield return "?";
         for (int i = 0; i < UnityHubUtils.UnityInstallations.Count; i++)
-                yield return UnityHubUtils.UnityInstallations[i].version;
+            yield return UnityHubUtils.UnityInstallations[i].version;
     }
 
     void OnUnityVersionChanged()

@@ -37,6 +37,8 @@ class LocalizationZhongwenJianti : ILocalization
     public string BackgroundBlurIntensity => "背景模糊强度";
     public string ChangesTheIntensityOfTheBackgroundBlur => "更改背景模糊的强度。";
     public string ExtendToTitlebar => "扩展到标题栏";
+    public string ProjectTitleBold => "项目标题加粗";
+    public string ProjectTitleBold_Tooltip => "开启后，项目标题将以粗体显示";
     public string Font => "字体";
     public string Font_Tooltip => "更改应用程序字体系列。";
     public string ExtendsTheClientAreaToTheTitlebar => "将客户端区域扩展到标题栏。";
